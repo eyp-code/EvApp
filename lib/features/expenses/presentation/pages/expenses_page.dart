@@ -17,7 +17,8 @@ class ExpensesPage extends StatelessWidget {
         SizedBox(height: 20),
         SectionPlaceholder(
           title: 'Masraf listesi',
-          description: 'İlk MVP’de sadece benim ve ortak eşit böl masrafları eklenecek.',
+          description:
+              'İlk MVP’de sadece benim ve ortak eşit böl masrafları eklenecek.',
           icon: Icons.receipt_long_outlined,
         ),
       ],
@@ -38,16 +39,16 @@ class _PageHeader extends StatelessWidget {
       children: [
         Text(
           title,
-          style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                fontWeight: FontWeight.w800,
-              ),
+          style: Theme.of(
+            context,
+          ).textTheme.headlineSmall?.copyWith(fontWeight: FontWeight.w800),
         ),
         const SizedBox(height: 4),
         Text(
           subtitle,
           style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                color: Theme.of(context).colorScheme.onSurfaceVariant,
-              ),
+            color: Theme.of(context).colorScheme.onSurfaceVariant,
+          ),
         ),
       ],
     );

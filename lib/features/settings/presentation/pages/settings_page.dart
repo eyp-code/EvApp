@@ -1,23 +1,39 @@
 import 'package:flutter/material.dart';
 
+import '../../../people/domain/repositories/person_repository.dart';
 import '../../../../shared/widgets/section_placeholder.dart';
 
 class SettingsPage extends StatelessWidget {
-  const SettingsPage({super.key});
+  const SettingsPage({super.key, required this.personRepository});
+
+  final PersonRepository personRepository;
 
   @override
   Widget build(BuildContext context) {
     return ListView(
       padding: const EdgeInsets.all(16),
-      children: const [
-        _PageHeader(
+      children: [
+        const _PageHeader(
           title: 'Ayarlar',
           subtitle: 'Para birimi, bildirimler ve yedekleme burada yönetilecek.',
         ),
-        SizedBox(height: 20),
-        SectionPlaceholder(
+        const SizedBox(height: 20),
+        FutureBuilder(
+          future: personRepository.getPersons(),
+          builder: (context, snapshot) {
+            final count = snapshot.data?.length ?? 0;
+
+            return SectionPlaceholder(
+              title: 'Local kayıt durumu',
+              description: 'Hive içinde şu an $count kişi kaydı var.',
+              icon: Icons.storage_outlined,
+            );
+          },
+        ),
+        const SectionPlaceholder(
           title: 'Uygulama ayarları',
-          description: 'JSON yedek alma, içe aktarma ve bildirim ayarları bu ekrana eklenecek.',
+          description:
+              'JSON yedek alma, içe aktarma ve bildirim ayarları bu ekrana eklenecek.',
           icon: Icons.settings_outlined,
         ),
       ],
@@ -38,16 +54,16 @@ class _PageHeader extends StatelessWidget {
       children: [
         Text(
           title,
-          style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                fontWeight: FontWeight.w800,
-              ),
+          style: Theme.of(
+            context,
+          ).textTheme.headlineSmall?.copyWith(fontWeight: FontWeight.w800),
         ),
         const SizedBox(height: 4),
         Text(
           subtitle,
           style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                color: Theme.of(context).colorScheme.onSurfaceVariant,
-              ),
+            color: Theme.of(context).colorScheme.onSurfaceVariant,
+          ),
         ),
       ],
     );

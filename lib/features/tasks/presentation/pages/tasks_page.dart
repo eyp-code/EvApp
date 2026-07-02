@@ -12,12 +12,14 @@ class TasksPage extends StatelessWidget {
       children: const [
         _PageHeader(
           title: 'Görevler',
-          subtitle: 'Ev işleri, sorumlular ve tekrar eden görevler burada tutulacak.',
+          subtitle:
+              'Ev işleri, sorumlular ve tekrar eden görevler burada tutulacak.',
         ),
         SizedBox(height: 20),
         SectionPlaceholder(
           title: 'Ev görevleri',
-          description: 'Görev ekleme, sorumlu seçme ve tamamlandı işaretleme için temel ekran.',
+          description:
+              'Görev ekleme, sorumlu seçme ve tamamlandı işaretleme için temel ekran.',
           icon: Icons.task_alt_outlined,
         ),
       ],
@@ -38,16 +40,16 @@ class _PageHeader extends StatelessWidget {
       children: [
         Text(
           title,
-          style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                fontWeight: FontWeight.w800,
-              ),
+          style: Theme.of(
+            context,
+          ).textTheme.headlineSmall?.copyWith(fontWeight: FontWeight.w800),
         ),
         const SizedBox(height: 4),
         Text(
           subtitle,
           style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                color: Theme.of(context).colorScheme.onSurfaceVariant,
-              ),
+            color: Theme.of(context).colorScheme.onSurfaceVariant,
+          ),
         ),
       ],
     );

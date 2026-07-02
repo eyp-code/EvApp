@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../../../../bootstrap.dart';
 import '../../bills/presentation/pages/bills_page.dart';
 import '../../dashboard/presentation/pages/dashboard_page.dart';
 import '../../expenses/presentation/pages/expenses_page.dart';
@@ -8,7 +9,9 @@ import '../../shopping/presentation/pages/shopping_page.dart';
 import '../../tasks/presentation/pages/tasks_page.dart';
 
 class MainShell extends StatefulWidget {
-  const MainShell({super.key});
+  const MainShell({super.key, required this.dependencies});
+
+  final AppDependencies dependencies;
 
   @override
   State<MainShell> createState() => _MainShellState();
@@ -17,23 +20,20 @@ class MainShell extends StatefulWidget {
 class _MainShellState extends State<MainShell> {
   int _selectedIndex = 0;
 
-  static const _pages = [
-    DashboardPage(),
-    ExpensesPage(),
-    BillsPage(),
-    ShoppingPage(),
-    TasksPage(),
-    SettingsPage(),
-  ];
-
   @override
   Widget build(BuildContext context) {
+    final pages = [
+      DashboardPage(personRepository: widget.dependencies.personRepository),
+      const ExpensesPage(),
+      const BillsPage(),
+      const ShoppingPage(),
+      const TasksPage(),
+      SettingsPage(personRepository: widget.dependencies.personRepository),
+    ];
+
     return Scaffold(
       body: SafeArea(
-        child: IndexedStack(
-          index: _selectedIndex,
-          children: _pages,
-        ),
+        child: IndexedStack(index: _selectedIndex, children: pages),
       ),
       bottomNavigationBar: NavigationBar(
         selectedIndex: _selectedIndex,

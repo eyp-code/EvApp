@@ -12,12 +12,14 @@ class ShoppingPage extends StatelessWidget {
       children: const [
         _PageHeader(
           title: 'Alışveriş',
-          subtitle: 'Ev için alınacaklar ve tahmini fiyatlar burada takip edilecek.',
+          subtitle:
+              'Ev için alınacaklar ve tahmini fiyatlar burada takip edilecek.',
         ),
         SizedBox(height: 20),
         SectionPlaceholder(
           title: 'Alınacaklar listesi',
-          description: 'Ürün ekleme, öncelik verme ve alındı işaretleme sonraki fazlarda gelecek.',
+          description:
+              'Ürün ekleme, öncelik verme ve alındı işaretleme sonraki fazlarda gelecek.',
           icon: Icons.shopping_cart_outlined,
         ),
       ],
@@ -38,16 +40,16 @@ class _PageHeader extends StatelessWidget {
       children: [
         Text(
           title,
-          style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                fontWeight: FontWeight.w800,
-              ),
+          style: Theme.of(
+            context,
+          ).textTheme.headlineSmall?.copyWith(fontWeight: FontWeight.w800),
         ),
         const SizedBox(height: 4),
         Text(
           subtitle,
           style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                color: Theme.of(context).colorScheme.onSurfaceVariant,
-              ),
+            color: Theme.of(context).colorScheme.onSurfaceVariant,
+          ),
         ),
       ],
     );

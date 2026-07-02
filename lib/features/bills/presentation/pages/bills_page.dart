@@ -17,7 +17,8 @@ class BillsPage extends StatelessWidget {
         SizedBox(height: 20),
         SectionPlaceholder(
           title: 'Aylık fatura kayıtları',
-          description: 'Su, elektrik, doğalgaz, kira ve aidat gibi kayıtlar ayrı aylar halinde tutulacak.',
+          description:
+              'Su, elektrik, doğalgaz, kira ve aidat gibi kayıtlar ayrı aylar halinde tutulacak.',
           icon: Icons.payments_outlined,
         ),
       ],
@@ -38,16 +39,16 @@ class _PageHeader extends StatelessWidget {
       children: [
         Text(
           title,
-          style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                fontWeight: FontWeight.w800,
-              ),
+          style: Theme.of(
+            context,
+          ).textTheme.headlineSmall?.copyWith(fontWeight: FontWeight.w800),
         ),
         const SizedBox(height: 4),
         Text(
           subtitle,
           style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                color: Theme.of(context).colorScheme.onSurfaceVariant,
-              ),
+            color: Theme.of(context).colorScheme.onSurfaceVariant,
+          ),
         ),
       ],
     );

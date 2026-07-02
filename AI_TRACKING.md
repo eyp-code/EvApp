@@ -127,3 +127,125 @@ Phase 1 ile başlamak:
 **Sonraki adım**
 
 - Phase 1 doğrulaması tamamlandıktan sonra Phase 2'ye geçilecek: Hive paketleri, local storage bootstrap akışı ve ilk `Person` modeli.
+
+### 2026-07-02 - Phase 2 Local Storage Temeli ve Person Seed
+
+**Ne yaptık**
+
+- Local storage için Hive altyapısı eklendi.
+- `uuid` eklendi; kayıt id'leri rastgele ve benzersiz üretilecek.
+- Uygulama açılışı `bootstrapApp()` ile hazır hale getirildi.
+- İlk domain modeli olarak `Person` oluşturuldu.
+- Uygulama ilk açıldığında Hive içinde `isMe == true` kişi yoksa otomatik `Ben` kaydı oluşturuluyor.
+- Dashboard ekranında local kişi kaydı görünür hale getirildi.
+- Ayarlar ekranında Hive içinde kaç kişi kaydı olduğu gösterildi.
+- Widget testi fake `PersonRepository` kullanacak şekilde güncellendi.
+
+**Nasıl kodladık**
+
+- `lib/bootstrap.dart` uygulamanın başlangıç hazırlığını yönetiyor:
+  - `Hive.initFlutter()`
+  - `persons_box` açılışı
+  - datasource ve repository oluşturma
+  - default `Ben` kişisini seed etme
+- `Person` modeli `toJson/fromJson` destekli yazıldı.
+- Şimdilik Hive adapter/code generation kullanmadık; modeli JSON map olarak saklıyoruz.
+- Bunun nedeni başlangıçta daha anlaşılır ve daha az karmaşık ilerlemek.
+- Repository sınırı korundu:
+  - UI -> `PersonRepository`
+  - Repository -> `PersonLocalDataSource`
+  - DataSource -> Hive box
+
+**Neden böyle yaptık**
+
+- UI'ın Hive'ı doğrudan bilmemesi kuralını ilk gerçek veri modelinden itibaren uyguladık.
+- `Person` modeli masraf paylaşımı için temel olacak; "Ben" ve sonra "Ev arkadaşı" bu yapıdan gelecek.
+- `toJson/fromJson` ileride JSON backup/restore ve Firebase geçişi için temel hazırlık.
+
+**Değişen dosyalar**
+
+- `pubspec.yaml`
+- `pubspec.lock`
+- `lib/main.dart`
+- `lib/app/app.dart`
+- `lib/bootstrap.dart`
+- `lib/core/storage/hive_box_names.dart`
+- `lib/features/people/domain/models/person.dart`
+- `lib/features/people/domain/repositories/person_repository.dart`
+- `lib/features/people/data/data_sources/person_local_data_source.dart`
+- `lib/features/people/data/repositories/local_person_repository.dart`
+- `lib/features/shell/presentation/main_shell.dart`
+- `lib/features/dashboard/presentation/pages/dashboard_page.dart`
+- `lib/features/settings/presentation/pages/settings_page.dart`
+- `test/widget_test.dart`
+
+**Doğrulama**
+
+- `flutter pub get` başarılı.
+- `dart format lib test` başarılı.
+- `flutter analyze` başarılı, issue yok.
+- `flutter test` başarılı, tüm testler geçti.
+
+**Önemli not**
+
+- Flutter SDK sürümü değiştirilmedi.
+- Commit atılmadı. Commit atma işi proje sahibinde.
+
+**Sonraki adım**
+
+- Phase 3: Person / Roommate sistemi.
+- Bu adımda ev arkadaşı ekleme, kişi listeleme ve ileride masraf formunda kullanılacak kişi seçimi için temel UI kurulacak.
+
+### 2026-07-02 - Bootstrap Dependency Hatası Düzeltmesi
+
+**Gelen hata**
+
+- Emulator üzerinde şu tip hata görüldü:
+  - `type Null is not a subtype of type AppDependencies of function result`
+
+**Neden oldu**
+
+- Önceki yapıda `main.dart` içinde `bootstrapApp()` çalışıyor, sonra sonuç `EvApp(dependencies: dependencies)` olarak uygulamaya veriliyordu.
+- Bu doğru bir yöntem olabilir ama geliştirme sırasında hot reload/hot restart eski widget bilgisini taşıyınca `EvApp` için beklenen dependency alanı null kalabiliyor.
+- Yani problem Flutter sürümü değil; uygulama başlangıç şeklinin geliştirme sırasında kırılgan kalmasıydı.
+
+**Nasıl düzelttik**
+
+- `main.dart` tekrar sade hale getirildi:
+  - `WidgetsFlutterBinding.ensureInitialized()`
+  - `runApp(const EvApp())`
+- `EvApp` artık kendi içinde bootstrap sürecini yönetiyor.
+- `EvApp` açılınca:
+  1. `bootstrapApp()` çağrılıyor.
+  2. Hive hazırlanıyor.
+  3. Repository'ler oluşturuluyor.
+  4. Hazırlık bitince `MainShell` açılıyor.
+- Hazırlık sürerken loading ekranı gösteriliyor.
+- Hazırlıkta hata olursa kırmızı crash yerine okunabilir hata ekranı gösteriliyor.
+
+**Hiç bilmeyen biri için mantık**
+
+- `main.dart` uygulamanın kapısıdır. Burada mümkün olduğunca az iş yapıyoruz.
+- `bootstrapApp()` uygulama açılmadan önce gerekli hazırlıkları yapar.
+- Hive, telefonun içindeki küçük yerel veritabanı gibi düşünülebilir.
+- `persons_box`, Hive içinde kişi kayıtlarını koyduğumuz kutudur.
+- `Person` bizim kişi modelimizdir. İlk kayıt olarak `Ben` oluşturulur.
+- `Repository`, ekranların veriyle konuştuğu kapıdır.
+- Ekranlar Hive'ı bilmez. Ekran sadece "bana kişileri ver" der; repository gerisini halleder.
+
+**Test düzeltmesi**
+
+- `EvApp` artık açılışta önce loading frame'i gösterebildiği için widget testinde bir frame bekletildi.
+- Test gerçek Hive kullanmıyor; fake `PersonRepository` veriliyor.
+- Böylece test hızlı ve bağımsız kalıyor.
+
+**Doğrulama**
+
+- `dart format test lib` başarılı.
+- `flutter analyze` başarılı, issue yok.
+- `flutter test` başarılı, tüm testler geçti.
+
+**Commit kuralı**
+
+- Commit atılmadı.
+- Commit atma işi proje sahibinde kalmaya devam ediyor.
