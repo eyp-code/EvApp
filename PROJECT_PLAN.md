@@ -4,6 +4,8 @@
 
 Bu dosya EvApp projesinin ana planıdır. Diğer `.md` dosyaları bu planın detaylarını içerir.
 
+> Güncel karar: EvApp borç/alacak takibi yapmayacak. Ortak masraf paylaşımı, benim payım, ev arkadaşının payı ve toplam ev masrafı hesaplanacak; ancak "kim kime borçlu" veya "net borç" ekranı olmayacak. `paidByPersonId` sadece kayıt ve raporlama amacıyla tutulacak.
+
 ---
 
 ## 1. Proje Özeti

@@ -6,6 +6,8 @@ Ana prensip:
 
 > Önce küçük ve çalışan parçalar yapılacak. Sonra özellikler büyütülecek.
 
+> Güncel ürün kararı: Masraf paylaşımı olacak, fakat borç/alacak takibi olmayacak. Roadmap içinde eski borç/net borç ifadeleri görülürse bunlar kapsam dışı kabul edilecek.
+
 ---
 
 ---

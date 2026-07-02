@@ -30,7 +30,7 @@ class DashboardPage extends StatelessWidget {
         const SectionPlaceholder(
           title: 'Aylık finans özeti',
           description:
-              'Toplam ev masrafı, benim payım ve net borç burada görünecek.',
+              'Toplam ev masrafı, benim payım ve kişisel harcamam burada görünecek.',
           icon: Icons.account_balance_wallet_outlined,
         ),
         const SectionPlaceholder(

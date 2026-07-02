@@ -21,6 +21,8 @@ Bu dosya proje boyunca AI ile yapılan kararları, kod değişikliklerini ve ger
 - Veriler JSON export/import ile yedeklenebilir olacak.
 - Modeller ileride Firebase/backend sync için id, tarih, soft delete ve sync alanlarına hazır tasarlanacak.
 - MVP odağı: person sistemi, masraf ekleme, ortak gider bölme, fatura takibi, dashboard özet, local kayıt ve JSON yedekleme.
+- Masraf paylaşımı olacak ama borç/alacak takibi olmayacak. Uygulama "kim kime borçlu" veya "net borç" hesabı göstermeyecek.
+- Masraflarda "kim ödedi" bilgisi tutulabilir; bu bilgi sadece kayıt, filtreleme ve raporlama için kullanılacak.
 
 ## İncelenen Dokümanlar
 
@@ -249,3 +251,35 @@ Phase 1 ile başlamak:
 
 - Commit atılmadı.
 - Commit atma işi proje sahibinde kalmaya devam ediyor.
+
+### 2026-07-02 - Borç/Alacak Kapsamdan Çıkarıldı
+
+**Ürün kararı**
+
+- Ev arkadaşı ve ortak masraf paylaşımı kalacak.
+- Kullanıcı bir masrafı ikiye bölebilecek veya farklı paylarla bölebilecek.
+- Kullanıcı "kim ödedi?" bilgisini seçebilecek.
+- Uygulama borç/alacak takibi yapmayacak.
+- Dashboard veya raporlarda "kim kime borçlu", "bana borçlu", "ben ona borçluyum", "net borç" gibi alanlar olmayacak.
+
+**Neden**
+
+- Bu uygulamanın hedefi ev masraflarını ve kişinin kendi payını takip etmek.
+- Borç takibi ayrı bir finans/settlement sistemi gibi davranır ve ürünü gereksiz karmaşıklaştırır.
+- Şimdilik yeterli bilgiler:
+  - Toplam ev masrafı
+  - Benim payım
+  - Kişisel harcamam
+  - Ev arkadaşının payı
+  - Kategori/fatura/abonelik toplamları
+
+**Kodda yapılan düzeltme**
+
+- Dashboard placeholder metnindeki `net borç` ifadesi kaldırıldı.
+- Yerine `kişisel harcamam` ifadesi kullanıldı.
+
+**Gelecek geliştirme notu**
+
+- ExpenseCalculator yazılırken debt/net debt fonksiyonları eklenmeyecek.
+- `paidByPersonId` alanı yine tutulabilir, ama borç üretmek için değil; sadece "bu kaydı kim ödedi?" bilgisini saklamak için.
+- AI ileride eski dokümanlarda borç ifadesi görürse bu tracking kararını daha güncel kaynak kabul edecek.
