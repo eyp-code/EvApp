@@ -23,7 +23,10 @@ class _MainShellState extends State<MainShell> {
   @override
   Widget build(BuildContext context) {
     final pages = [
-      DashboardPage(personRepository: widget.dependencies.personRepository),
+      DashboardPage(
+        personRepository: widget.dependencies.personRepository,
+        expenseRepository: widget.dependencies.expenseRepository,
+      ),
       ExpensesPage(
         personRepository: widget.dependencies.personRepository,
         expenseRepository: widget.dependencies.expenseRepository,

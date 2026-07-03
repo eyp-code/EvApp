@@ -98,6 +98,49 @@ class Expense {
   final String syncStatus;
   final DateTime? lastSyncedAt;
 
+  Expense copyWith({
+    String? title,
+    String? category,
+    double? totalAmount,
+    DateTime? spentAt,
+    String? paidByPersonId,
+    String? splitType,
+    List<ExpenseShare>? shares,
+    DateTime? updatedAt,
+    bool? isDeleted,
+    DateTime? deletedAt,
+    String? syncStatus,
+    DateTime? lastSyncedAt,
+  }) {
+    return Expense(
+      id: id,
+      title: title ?? this.title,
+      category: category ?? this.category,
+      totalAmount: totalAmount ?? this.totalAmount,
+      spentAt: spentAt ?? this.spentAt,
+      paidByPersonId: paidByPersonId ?? this.paidByPersonId,
+      splitType: splitType ?? this.splitType,
+      shares: shares ?? this.shares,
+      createdAt: createdAt,
+      updatedAt: updatedAt ?? this.updatedAt,
+      isDeleted: isDeleted ?? this.isDeleted,
+      deletedAt: deletedAt ?? this.deletedAt,
+      syncStatus: syncStatus ?? this.syncStatus,
+      lastSyncedAt: lastSyncedAt ?? this.lastSyncedAt,
+    );
+  }
+
+  Expense markedDeleted() {
+    final now = DateTime.now();
+
+    return copyWith(
+      updatedAt: now,
+      isDeleted: true,
+      deletedAt: now,
+      syncStatus: SyncStatus.pendingDelete,
+    );
+  }
+
   double shareFor(String personId) {
     return shares
         .where((share) => share.personId == personId)

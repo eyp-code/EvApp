@@ -18,6 +18,16 @@ class ExpenseLocalDataSource {
     return expenses;
   }
 
+  Future<Expense?> getExpenseById(String id) async {
+    final value = _box.get(id);
+
+    if (value == null) {
+      return null;
+    }
+
+    return Expense.fromJson(Map<String, dynamic>.from(value));
+  }
+
   Future<void> saveExpense(Expense expense) async {
     await _box.put(expense.id, expense.toJson());
   }

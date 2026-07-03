@@ -54,6 +54,11 @@ class _ExpensesPageState extends State<ExpensesPage> {
     await _refresh();
   }
 
+  Future<void> _deleteExpense(Expense expense) async {
+    await widget.expenseRepository.deleteExpense(expense.id);
+    await _refresh();
+  }
+
   @override
   Widget build(BuildContext context) {
     return FutureBuilder<List<Person>>(
@@ -102,6 +107,7 @@ class _ExpensesPageState extends State<ExpensesPage> {
                           expense: expense,
                           persons: persons,
                           myPersonId: me?.id,
+                          onDelete: () => _deleteExpense(expense),
                         ),
                       )
                       .toList(),
@@ -245,7 +251,7 @@ class _AddExpenseDialogState extends State<_AddExpenseDialog> {
               segments: const [
                 ButtonSegment(
                   value: SplitType.onlyMe,
-                  label: Text('Sadece benim'),
+                  label: Text('Sadece bana ait'),
                 ),
                 ButtonSegment(
                   value: SplitType.equal,
@@ -278,11 +284,13 @@ class _ExpenseCard extends StatelessWidget {
     required this.expense,
     required this.persons,
     required this.myPersonId,
+    required this.onDelete,
   });
 
   final Expense expense;
   final List<Person> persons;
   final String? myPersonId;
+  final VoidCallback onDelete;
 
   @override
   Widget build(BuildContext context) {
@@ -291,7 +299,7 @@ class _ExpenseCard extends StatelessWidget {
     final paidBy = _personName(expense.paidByPersonId);
     final splitLabel = expense.splitType == SplitType.equal
         ? 'Ortak eşit bölündü'
-        : 'Sadece benim';
+        : 'Sadece bana ait';
 
     return Card(
       child: Padding(
@@ -321,12 +329,22 @@ class _ExpenseCard extends StatelessWidget {
                     ],
                   ),
                 ),
-                Text(
-                  _formatAmount(expense.totalAmount),
-                  style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                    fontWeight: FontWeight.w800,
-                    color: colorScheme.primary,
-                  ),
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.end,
+                  children: [
+                    Text(
+                      _formatAmount(expense.totalAmount),
+                      style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                        fontWeight: FontWeight.w800,
+                        color: colorScheme.primary,
+                      ),
+                    ),
+                    IconButton(
+                      tooltip: 'Masrafı sil',
+                      onPressed: onDelete,
+                      icon: const Icon(Icons.delete_outline),
+                    ),
+                  ],
                 ),
               ],
             ),

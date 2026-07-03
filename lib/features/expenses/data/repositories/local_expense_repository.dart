@@ -13,6 +13,17 @@ class LocalExpenseRepository implements ExpenseRepository {
   }
 
   @override
+  Future<void> deleteExpense(String expenseId) async {
+    final expense = await _dataSource.getExpenseById(expenseId);
+
+    if (expense == null) {
+      return;
+    }
+
+    await _dataSource.saveExpense(expense.markedDeleted());
+  }
+
+  @override
   Future<List<Expense>> getExpenses() {
     return _dataSource.getExpenses();
   }

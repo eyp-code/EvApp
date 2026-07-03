@@ -393,3 +393,5 @@ NestJS + PostgreSQL + Prisma
 EvApp başlangıçta kişisel kullanım için local çalışan bir uygulama olacak.
 
 Ama mimari doğru kurulursa ileride Firebase veya özel backend ile gerçek zamanlı, çok cihazlı ve ev arkadaşlı bir ürüne dönüşebilecek.
+> Güncel hesaplama kararı: `Benim payım` yalnızca ortak bölünen masraflardan kullanıcıya düşen tutarı gösterir. `Kişisel harcamam`, ortak masraflardaki kullanıcı payı + sadece kullanıcıya ait masrafların toplamıdır. `paidByPersonId` bu iki hesabı borç/alacak hesabına dönüştürmez.
+> Güncel Dashboard hesaplama dili: Ana takip metriği `Bana yazılan toplam`dır. Bu değer ortak masraflardaki benim payım + sadece bana ait masraflardan oluşur. `Ortak masraflar`, `Benim ortak payım`, `Sadece benim masraflarım` ve `Bu ay girilen toplam` ayrı gösterilir. Borç/alacak veya net borç hesabı yapılmaz.

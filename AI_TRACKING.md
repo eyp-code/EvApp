@@ -390,3 +390,141 @@ Phase 1 ile başlamak:
 **Sonraki adım**
 
 - Masraf MVP'nin ikinci parçası: ortak eşit bölme için manuel test/test kapsamı, masraf silme ve dashboard finans özetine gerçek toplamların bağlanması.
+### 2026-07-03 - Phase 4 Expense MVP İkinci Parça
+
+**Ne yaptık**
+
+- Masraf silme akışı eklendi.
+- `Expense` modeline `copyWith` ve `markedDeleted` eklendi.
+- `ExpenseRepository` sözleşmesine `deleteExpense` eklendi.
+- Expense Hive data source içine id ile masraf okuma desteği eklendi.
+- Local expense repository silmeyi soft delete olarak uyguluyor.
+- Masraf kartına silme ikonu eklendi.
+- Dashboard finans özeti gerçek masraf kayıtlarına bağlandı:
+  - Toplam ev masrafı
+  - Benim payım
+  - Kişisel harcamam
+- Dashboard'a `ExpenseRepository` dependency olarak verildi.
+- Widget testlerine masraf silme ve dashboard özet senaryoları eklendi.
+
+**Nasıl kodladık**
+
+- Silme fiziksel kayıt silme değil; `isDeleted`, `deletedAt` ve `pendingDelete` güncellemesiyle soft delete.
+- Dashboard, `PersonRepository.getMe()` ve `ExpenseRepository.getExpenses()` sonuçlarını birlikte okuyarak toplamları hesaplıyor.
+- Borç/alacak hesabı eklenmedi; `paidByPersonId` sadece kişisel harcamam hesabı için kullanıldı.
+- Test dosyası UTF-8 metinlerle temiz yeniden yazıldı.
+
+**Neden böyle yaptık**
+
+- Kullanıcı yanlış masraf girebilir; MVP'nin kullanılabilir olması için silme gerekir.
+- Dashboard'ın gerçek veriye bağlanması masraf ekleme akışını görünür ve doğrulanabilir hale getirir.
+- Soft delete ileride backup/restore ve sync davranışını kolaylaştırır.
+
+**Değişen dosyalar**
+
+- `lib/features/expenses/domain/models/expense.dart`
+- `lib/features/expenses/domain/repositories/expense_repository.dart`
+- `lib/features/expenses/data/data_sources/expense_local_data_source.dart`
+- `lib/features/expenses/data/repositories/local_expense_repository.dart`
+- `lib/features/expenses/presentation/pages/expenses_page.dart`
+- `lib/features/dashboard/presentation/pages/dashboard_page.dart`
+- `lib/features/shell/presentation/main_shell.dart`
+- `test/widget_test.dart`
+- `AI_TRACKING.md`
+
+**Doğrulama**
+
+- `dart format lib test` başarılı.
+- `flutter analyze` başarılı, issue yok.
+- `flutter test` başarılı, tüm testler geçti.
+
+**Sonraki adım**
+
+- Ortak eşit bölme akışını manuel ve otomatik testlerle güçlendirmek.
+- Ardından masraf düzenleme veya fatura sistemi MVP'sine geçmeden önce dashboard tarih filtresi ihtiyacını netleştirmek.
+### 2026-07-03 - Dashboard Kişisel Harcamam Hesabı Düzeltmesi
+
+**Ne değişti**
+
+- Dashboard içindeki `Kişisel harcamam` hesabı düzeltildi.
+- Önce bu alan `paidByPersonId == Ben` olan masrafların toplamıydı.
+- Artık `Kişisel harcamam`, `Benim payım` ile aynı değeri gösteriyor.
+
+**Neden**
+
+- Bu uygulamada amaç kasadan kimin ne kadar ödediğini borç/alacak gibi takip etmek değil.
+- Kullanıcının görmek istediği kişisel harcama, kendi payına düşen harcama tutarı.
+- Bu yüzden ev arkadaşı ödemiş olsa bile ortak eşit masrafta kullanıcının kişisel harcaması kendi payı kadar olmalı.
+
+**Örnek**
+
+- Market masrafı: 1200 TL
+- Ödeyen: Ev arkadaşı
+- Paylaşım: Ortak eşit
+- Toplam ev masrafı: 1200 TL
+- Benim payım: 600 TL
+- Kişisel harcamam: 600 TL
+
+**Doğrulama**
+
+- Dashboard widget testi ortak eşit masraf senaryosuna güncellendi.
+- `dart format lib test` başarılı.
+- `flutter analyze` başarılı, issue yok.
+- `flutter test` başarılı, tüm testler geçti.
+### 2026-07-03 - Benim Payım ve Kişisel Harcamam Ayrımı
+
+**Ürün kararı**
+
+- `Benim payım` yalnızca ortak bölünen masraflardan kullanıcıya düşen tutarı gösterecek.
+- `Kişisel harcamam`, ortak masraflardaki kullanıcı payı + sadece kullanıcıya ait masrafların toplamı olacak.
+- `paidByPersonId` borç/alacak hesabı üretmeyecek; sadece "bu kaydı kim ödedi?" bilgisi olarak kalacak.
+
+**Örnek**
+
+- Ortak market: 1200 TL, iki kişi eşit bölündü.
+- Sadece benim kahve: 200 TL.
+- Toplam ev masrafı: 1400 TL.
+- Benim payım: 600 TL.
+- Kişisel harcamam: 800 TL.
+
+**Kod değişikliği**
+
+- Dashboard hesaplamasında `myShare`, sadece `SplitType.equal` masraflardaki kullanıcı payından hesaplanıyor.
+- Dashboard hesaplamasında `personalExpense`, tüm masraflardaki kullanıcı payı toplamından hesaplanıyor.
+- Dashboard widget testi bu örnek senaryoya göre güncellendi.
+
+**Doküman güncellemesi**
+
+- `PROJECT_PLAN.md` güncellendi.
+- `06_DEVELOPMENT_ROADMAP.md` güncellendi.
+- `AI_TRACKING.md` güncellendi.
+> Güncel Dashboard hesaplama dili: Ana takip metriği `Bana yazılan toplam`dır. Bu değer ortak masraflardaki benim payım + sadece bana ait masraflardan oluşur. `Ortak masraflar`, `Benim ortak payım`, `Sadece benim masraflarım` ve `Bu ay girilen toplam` ayrı gösterilir. Borç/alacak veya net borç hesabı yapılmaz.
+> Güncel Dashboard hesaplama dili: Ana takip metriği `Bana yazılan toplam`dır. Bu değer ortak masraflardaki benim payım + sadece bana ait masraflardan oluşur. `Ortak masraflar`, `Benim ortak payım`, `Sadece benim masraflarım` ve `Bu ay girilen toplam` ayrı gösterilir. Borç/alacak veya net borç hesabı yapılmaz.
+### 2026-07-03 - Dashboard Hesaplama Dilinin Netleştirilmesi
+
+**Ürün kararı**
+
+- Dashboard'da ana sayı artık `Bana yazılan toplam` olacak.
+- `Bana yazılan toplam` = ortak masraflardaki benim payım + sadece bana ait masraflar.
+- `Ortak masraflar` ikiye/eşit bölünen masrafların toplamını gösterir.
+- `Benim ortak payım` yalnızca ortak masraflardan bana düşen tutarı gösterir.
+- `Sadece benim masraflarım` ortak olmayan, doğrudan bana ait masrafları gösterir.
+- `Bu ay girilen toplam` uygulamaya girilen tüm masrafların toplamını gösterir.
+- Borç/alacak ve net borç hesabı yine kapsam dışıdır.
+
+**Örnek**
+
+- Ortak market: 1200 TL.
+- Sadece bana ait kahve: 200 TL.
+- Bana yazılan toplam: 800 TL.
+- Ortak masraflar: 1200 TL.
+- Benim ortak payım: 600 TL.
+- Sadece benim masraflarım: 200 TL.
+- Bu ay girilen toplam: 1400 TL.
+
+**Kod değişikliği**
+
+- Dashboard özet kartı yeni isimler ve yeni hesap alanlarıyla düzenlendi.
+- Masraf formundaki split etiketi `Sadece bana ait` olarak güncellendi.
+- Dashboard widget testi yeni hesaplama dili ve örnek senaryoya göre güncellendi.
+- Tüm markdown dokümanlarının başına güncel Dashboard hesaplama dili notu eklendi.
