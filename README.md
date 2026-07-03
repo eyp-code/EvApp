@@ -1,18 +1,77 @@
-# ev_masraflari_app
+# Ev Masraflari App
 
-A new Flutter project.
+Flutter ile gelistirilen local-first ev masrafi ve fatura takip uygulamasi.
 
-## Getting Started
+## Guncel Durum
 
-This project is a starting point for a Flutter application.
+Calisan temel akislari:
 
-A few resources to get you started if this is your first Flutter project:
+- Kisi sistemi: `Ben` kaydi ve ev arkadasi ekleme.
+- Masraf sistemi:
+  - Sadece bana ait masraf.
+  - Ortak esit masraf.
+  - Masraf silme.
+- Dashboard ozeti:
+  - Bana yazilan toplam.
+  - Ortak masraflar.
+  - Benim ortak payim.
+  - Sadece benim masraflarim.
+  - Bu ay girilen toplam.
+- Fatura sistemi:
+  - Fatura turu ekleme.
+  - Ev faturasi / kisisel fatura ayrimi.
+  - Aylik tekrarlayan fatura kaydi.
+  - Sabit tutarli fatura.
+  - Tutar bekleniyor / odenmeye hazir / odendi durumlari.
+  - Fatura odendiginde otomatik masraf kaydi olusturma.
+  - Aylik fatura silindiginde bagli masrafi da silme.
+  - Fatura turu silindiginde eski odenmis aylik kayitlari koruma.
 
-- [Learn Flutter](https://docs.flutter.dev/get-started/learn-flutter)
-- [Write your first Flutter app](https://docs.flutter.dev/get-started/codelab)
-- [Flutter learning resources](https://docs.flutter.dev/reference/learning-resources)
+## Hesaplama Karari
 
-For help getting started with Flutter development, view the
-[online documentation](https://docs.flutter.dev/), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
-> Güncel Dashboard hesaplama dili: Ana takip metriği `Bana yazılan toplam`dır. Bu değer ortak masraflardaki benim payım + sadece bana ait masraflardan oluşur. `Ortak masraflar`, `Benim ortak payım`, `Sadece benim masraflarım` ve `Bu ay girilen toplam` ayrı gösterilir. Borç/alacak veya net borç hesabı yapılmaz.
+Uygulama borc/alacak veya net borc hesabi yapmaz.
+
+Ana metrik `Bana yazilan toplam`dir:
+
+```text
+Bana yazilan toplam =
+  Ortak masraflardaki benim payim
+  + sadece bana ait masraflar
+```
+
+`Ortak esit` secilirse kullanicinin payi toplam tutarin yarisidir. Bu karar masraflar ve faturalardan otomatik olusan masraf kayitlari icin ayni sekilde uygulanir.
+
+## Dogrulama
+
+Son dogrulama:
+
+```bash
+dart format lib test
+flutter analyze
+flutter test
+```
+
+Son test durumunda 19 test basarili gecmistir.
+
+## Dokumanlar
+
+Detayli proje dokumanlari:
+
+- `PROJECT_PLAN.md`
+- `README_DOCS.md`
+- `01_PROJECT_OVERVIEW.md`
+- `02_LOCAL_FIRST_ARCHITECTURE.md`
+- `03_DATA_MODELS_AND_STORAGE.md`
+- `04_FEATURE_SPECIFICATIONS.md`
+- `05_BACKUP_RESTORE_AND_MIGRATION.md`
+- `06_DEVELOPMENT_ROADMAP.md`
+- `07_FUTURE_BACKEND_FIREBASE_PLAN.md`
+- `AI_TRACKING.md`
+
+## Siradaki Adim
+
+Onerilen siradaki teknik adim:
+
+1. Fatura ve masraf MVP degisikliklerini commit etmek.
+2. JSON backup / restore altyapisina gecmek.
+3. Backup oncesi mevcut Hive box yapisini ve export formatini netlestirmek.

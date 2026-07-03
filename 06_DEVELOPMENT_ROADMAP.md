@@ -1,5 +1,50 @@
 # 06 - Development Roadmap
 
+## Guncel Devam Notu - 2026-07-03
+
+Tamamlanan calisan kapsam:
+
+- Phase 1: Temel Flutter iskeleti.
+- Phase 2: Hive local storage temeli.
+- Phase 3: Person / roommate sistemi.
+- Phase 4: Expense MVP.
+- Phase 5: Borc/alacak olmadan pay hesabi ve dashboard ozeti.
+- Phase 6: Bill System MVP.
+
+Guncel fatura kapsami:
+
+- Fatura turu eklenebiliyor.
+- Ev faturasi otomatik `Ortak esit`, kisisel fatura otomatik `Sadece bana ait` kabul ediliyor.
+- Aylik tekrarlayan fatura mevcut ay icin otomatik olusuyor.
+- Tutar bekleyen fatura dogrudan odenemiyor.
+- Tutar girilince durum `Odenmeye Hazir` oluyor.
+- `Odendi` denince otomatik `Expense` kaydi olusuyor.
+- Ortak faturalar masraf mantigiyla ikiye bolunuyor.
+- Sabit tutarli kisisel faturalar tam tutari kullaniciya yaziyor.
+- Aylik fatura silinirse bagli otomatik masraf da siliniyor.
+- Fatura turu silinirse eski odenmis aylik kayitlar korunuyor.
+- Silinen tekrarlayan aylik fatura ayni ay icinde refresh sonrasi tekrar uretilmiyor.
+
+Guncel test durumu:
+
+- `dart format lib test` basarili.
+- `flutter analyze` basarili.
+- `flutter test` basarili.
+- 19 test geciyor.
+- Kapsamli widget testi masraf + fatura + dashboard + silme akisini bastan sona dogruluyor.
+
+Siradaki onerilen phase:
+
+1. Bu MVP noktasini commit ile sabitle.
+2. Phase 12 icinden once JSON backup / restore altyapisini one cek.
+3. Export formatina mevcut box'lari ekle:
+   - persons
+   - expenses
+   - billTypes
+   - monthlyBills
+4. Import icin ilk surumde `Replace All` stratejisini uygula.
+5. Backup/restore icin repository ve widget testleri ekle.
+
 Bu dosya EvApp’in hangi sırayla geliştirileceğini açıklar.
 
 Ana prensip:

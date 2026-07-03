@@ -1,5 +1,33 @@
 # 04 - Feature Specifications
 
+## Guncel Uygulanan Davranis - 2026-07-03
+
+Masraf ve fatura sistemi icin bugunku calisan kararlar:
+
+- Borc/alacak ve net borc hesabi yapilmaz.
+- Dashboard ana metrigi `Bana yazilan toplam`dir.
+- `Bana yazilan toplam` = ortak masraflardaki benim payim + sadece bana ait masraflar.
+- Aktif split secenekleri:
+  - `Sadece bana ait`
+  - `Ortak esit`
+- `Ortak esit` tutarlar ikiye bolunur ve benim payima yarisi yazilir.
+- Ev faturasi otomatik `Ortak esit` kabul edilir.
+- Kisisel fatura otomatik `Sadece bana ait` kabul edilir.
+- Tutar bekleyen fatura odenemez; once tutar girilmelidir.
+- Fatura odendiginde otomatik masraf kaydi olusur.
+- Aylik fatura kaydi silinirse ona bagli otomatik masraf kaydi da silinir.
+- Fatura turu silinirse eski odenmis aylik kayitlar korunur.
+- Silinen tekrarlayan aylik fatura ayni ay icinde tekrar otomatik uretilmez.
+
+Guncel fatura durumlari:
+
+```text
+amountWaiting: Tutar Bekleniyor
+readyToPay: Odenmeye Hazir
+paid: Odendi
+overdue: Gecikti
+```
+
 Bu dosya EvApp özelliklerinin detaylı davranışlarını açıklar.
 
 ---

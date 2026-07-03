@@ -1,5 +1,8 @@
 import 'package:ev_masraflari_app/app/app.dart';
 import 'package:ev_masraflari_app/bootstrap.dart';
+import 'package:ev_masraflari_app/features/bills/domain/models/bill_type.dart';
+import 'package:ev_masraflari_app/features/bills/domain/models/monthly_bill.dart';
+import 'package:ev_masraflari_app/features/bills/domain/repositories/bill_repository.dart';
 import 'package:ev_masraflari_app/features/expenses/domain/models/expense.dart';
 import 'package:ev_masraflari_app/features/expenses/domain/models/split_type.dart';
 import 'package:ev_masraflari_app/features/expenses/domain/repositories/expense_repository.dart';
@@ -17,6 +20,7 @@ void main() {
         dependencies: AppDependencies(
           personRepository: _FakePersonRepository(),
           expenseRepository: _FakeExpenseRepository(),
+          billRepository: _FakeBillRepository(),
         ),
       ),
     );
@@ -37,6 +41,7 @@ void main() {
         dependencies: AppDependencies(
           personRepository: _FakePersonRepository(),
           expenseRepository: _FakeExpenseRepository(),
+          billRepository: _FakeBillRepository(),
         ),
       ),
     );
@@ -67,6 +72,7 @@ void main() {
         dependencies: AppDependencies(
           personRepository: _FakePersonRepository(),
           expenseRepository: _FakeExpenseRepository(),
+          billRepository: _FakeBillRepository(),
         ),
       ),
     );
@@ -96,6 +102,7 @@ void main() {
         dependencies: AppDependencies(
           personRepository: _FakePersonRepository(),
           expenseRepository: _FakeExpenseRepository(),
+          billRepository: _FakeBillRepository(),
         ),
       ),
     );
@@ -123,6 +130,7 @@ void main() {
         dependencies: AppDependencies(
           personRepository: _FakePersonRepository.withRoommate(),
           expenseRepository: _FakeExpenseRepository(),
+          billRepository: _FakeBillRepository(),
         ),
       ),
     );
@@ -153,6 +161,7 @@ void main() {
         dependencies: AppDependencies(
           personRepository: _FakePersonRepository(),
           expenseRepository: _FakeExpenseRepository(),
+          billRepository: _FakeBillRepository(),
         ),
       ),
     );
@@ -212,6 +221,7 @@ void main() {
         dependencies: AppDependencies(
           personRepository: personRepository,
           expenseRepository: expenseRepository,
+          billRepository: _FakeBillRepository(),
         ),
       ),
     );
@@ -227,6 +237,583 @@ void main() {
     expect(find.text('600.00 TL'), findsOneWidget);
     expect(find.text('200.00 TL'), findsOneWidget);
     expect(find.text('1400.00 TL'), findsOneWidget);
+  });
+
+  test('Equal split assigns half to me when only my profile exists', () {
+    final me = Person.createMe(name: 'Ben');
+    final expense = Expense.create(
+      title: 'Elektrik',
+      category: 'Fatura',
+      totalAmount: 800,
+      spentAt: DateTime(2026, 7),
+      paidByPersonId: me.id,
+      splitType: SplitType.equal,
+      participantIds: [me.id],
+    );
+
+    expect(expense.shareFor(me.id), 400);
+  });
+
+  testWidgets('Bills page adds a bill type', (WidgetTester tester) async {
+    await tester.pumpWidget(
+      EvApp(
+        dependencies: AppDependencies(
+          personRepository: _FakePersonRepository(),
+          expenseRepository: _FakeExpenseRepository(),
+          billRepository: _FakeBillRepository(),
+        ),
+      ),
+    );
+    await tester.pump();
+
+    await tester.tap(find.text('Fatura'));
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.byTooltip('Fatura türü ekle'));
+    await tester.pumpAndSettle();
+
+    await tester.enterText(find.byType(TextFormField), 'Su');
+    await tester.tap(find.text('Kaydet'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Fatura türleri'), findsOneWidget);
+    expect(find.text('Su'), findsWidgets);
+    expect(find.text('Tutar Bekleniyor'), findsOneWidget);
+  });
+
+  testWidgets('Bills page adds and marks a monthly bill paid', (
+    WidgetTester tester,
+  ) async {
+    final personRepository = _FakePersonRepository();
+    final billRepository = _FakeBillRepository();
+    final expenseRepository = _FakeExpenseRepository();
+    await billRepository.addBillType(
+      BillType.create(name: 'Su', isRecurringMonthly: false),
+    );
+
+    await tester.pumpWidget(
+      EvApp(
+        dependencies: AppDependencies(
+          personRepository: personRepository,
+          expenseRepository: expenseRepository,
+          billRepository: billRepository,
+        ),
+      ),
+    );
+    await tester.pump();
+
+    await tester.tap(find.text('Fatura'));
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.byTooltip('Aylık fatura ekle'));
+    await tester.pumpAndSettle();
+
+    await tester.enterText(find.byType(TextFormField).first, '450');
+    await tester.tap(find.text('Kaydet'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Su'), findsWidgets);
+    expect(find.text('450.00 TL'), findsOneWidget);
+    expect(find.text('Ödenmeye Hazır'), findsOneWidget);
+
+    final paidButton = find.widgetWithText(TextButton, 'Ödendi işaretle');
+    await tester.ensureVisible(paidButton);
+    await tester.tap(paidButton);
+    await tester.pumpAndSettle();
+
+    expect(find.text('Ödendi'), findsOneWidget);
+    expect(find.text('Ödendi işaretle'), findsNothing);
+
+    final expenses = await expenseRepository.getExpenses();
+    expect(expenses, hasLength(1));
+    expect(expenses.single.title, 'Su');
+    expect(expenses.single.totalAmount, 450);
+    final me = await personRepository.getMe();
+    expect(expenses.single.shareFor(me!.id), 225);
+  });
+
+  testWidgets('Bills page auto creates recurring bills waiting for amount', (
+    WidgetTester tester,
+  ) async {
+    final billRepository = _FakeBillRepository();
+    await billRepository.addBillType(BillType.create(name: 'Elektrik'));
+
+    await tester.pumpWidget(
+      EvApp(
+        dependencies: AppDependencies(
+          personRepository: _FakePersonRepository(),
+          expenseRepository: _FakeExpenseRepository(),
+          billRepository: billRepository,
+        ),
+      ),
+    );
+    await tester.pump();
+
+    await tester.tap(find.text('Fatura'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Elektrik'), findsWidgets);
+    expect(find.text('Tutar Bekleniyor'), findsOneWidget);
+    expect(find.text('Ödendi işaretle'), findsNothing);
+    expect(find.text('Tutar gir'), findsOneWidget);
+  });
+
+  testWidgets('Bills page enters amount before paying an auto bill', (
+    WidgetTester tester,
+  ) async {
+    final billRepository = _FakeBillRepository();
+    final expenseRepository = _FakeExpenseRepository();
+    await billRepository.addBillType(BillType.create(name: 'Elektrik'));
+
+    await tester.pumpWidget(
+      EvApp(
+        dependencies: AppDependencies(
+          personRepository: _FakePersonRepository(),
+          expenseRepository: expenseRepository,
+          billRepository: billRepository,
+        ),
+      ),
+    );
+    await tester.pump();
+
+    await tester.tap(find.text('Fatura'));
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.text('Tutar gir').first);
+    await tester.pumpAndSettle();
+
+    await tester.enterText(find.byType(TextFormField).first, '785');
+    await tester.tap(find.text('Kaydet'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('785.00 TL'), findsOneWidget);
+    expect(find.text('Ödenmeye Hazır'), findsOneWidget);
+
+    final autoPaidButton = find.ancestor(
+      of: find.text('Ödendi işaretle'),
+      matching: find.byType(TextButton),
+    );
+    await tester.drag(find.byType(ListView), const Offset(0, -240));
+    await tester.pumpAndSettle();
+    await tester.ensureVisible(autoPaidButton);
+    await tester.tap(autoPaidButton);
+    await tester.pumpAndSettle();
+
+    final expenses = await expenseRepository.getExpenses();
+    expect(expenses, hasLength(1));
+    expect(expenses.single.title, 'Elektrik');
+    expect(expenses.single.totalAmount, 785);
+
+    await tester.tap(find.byIcon(Icons.dashboard_outlined));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Bana yazılan toplam'), findsOneWidget);
+    expect(find.text('392.50 TL'), findsWidgets);
+    expect(find.text('785.00 TL'), findsWidgets);
+  });
+
+  testWidgets('Shared paid bill updates dashboard like a shared expense', (
+    WidgetTester tester,
+  ) async {
+    final personRepository = _FakePersonRepository.withRoommate();
+    final billRepository = _FakeBillRepository();
+    final expenseRepository = _FakeExpenseRepository();
+    await billRepository.addBillType(BillType.create(name: 'Elektrik'));
+
+    await tester.pumpWidget(
+      EvApp(
+        dependencies: AppDependencies(
+          personRepository: personRepository,
+          expenseRepository: expenseRepository,
+          billRepository: billRepository,
+        ),
+      ),
+    );
+    await tester.pump();
+
+    await tester.tap(find.text('Fatura'));
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.text('Tutar gir'));
+    await tester.pumpAndSettle();
+
+    await tester.enterText(find.byType(TextFormField).first, '800');
+    await tester.tap(find.text('Kaydet'));
+    await tester.pumpAndSettle();
+
+    final paidButton = find.ancestor(
+      of: find.text('Ödendi işaretle'),
+      matching: find.byType(TextButton),
+    );
+    await tester.drag(find.byType(ListView), const Offset(0, -240));
+    await tester.pumpAndSettle();
+    await tester.ensureVisible(paidButton);
+    await tester.tap(paidButton);
+    await tester.pumpAndSettle();
+
+    final expenses = await expenseRepository.getExpenses();
+    expect(expenses, hasLength(1));
+    expect(expenses.single.totalAmount, 800);
+    expect(expenses.single.shares, hasLength(2));
+
+    await tester.tap(find.byIcon(Icons.dashboard_outlined));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Bana yazılan toplam'), findsOneWidget);
+    expect(find.text('400.00 TL'), findsWidgets);
+    expect(find.text('800.00 TL'), findsWidgets);
+  });
+
+  testWidgets('Bills page deletes a bill type from the list', (
+    WidgetTester tester,
+  ) async {
+    final billRepository = _FakeBillRepository();
+    await billRepository.addBillType(
+      BillType.create(name: 'Su', isRecurringMonthly: false),
+    );
+
+    await tester.pumpWidget(
+      EvApp(
+        dependencies: AppDependencies(
+          personRepository: _FakePersonRepository(),
+          expenseRepository: _FakeExpenseRepository(),
+          billRepository: billRepository,
+        ),
+      ),
+    );
+    await tester.pump();
+
+    await tester.tap(find.text('Fatura'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Su'), findsOneWidget);
+
+    await tester.tap(find.byTooltip('Fatura türünü sil'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Su'), findsNothing);
+  });
+
+  testWidgets('Deleting a bill type keeps old paid monthly records visible', (
+    WidgetTester tester,
+  ) async {
+    final billRepository = _FakeBillRepository();
+    final expenseRepository = _FakeExpenseRepository();
+    final billType = BillType.create(name: 'Elektrik');
+    await billRepository.addBillType(billType);
+    await billRepository.addMonthlyBill(
+      MonthlyBill.fromBillType(
+        billType: billType,
+        year: DateTime.now().year,
+        month: DateTime.now().month - 1,
+      ).withDetails(amount: 600).markedPaid(),
+    );
+
+    await tester.pumpWidget(
+      EvApp(
+        dependencies: AppDependencies(
+          personRepository: _FakePersonRepository(),
+          expenseRepository: expenseRepository,
+          billRepository: billRepository,
+        ),
+      ),
+    );
+    await tester.pump();
+
+    await tester.tap(find.text('Fatura'));
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.byTooltip('Fatura türünü sil'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Elektrik'), findsOneWidget);
+    expect(find.text('600.00 TL'), findsOneWidget);
+    expect(find.text('Ödendi'), findsOneWidget);
+    expect(find.text('Tutar Bekleniyor'), findsNothing);
+  });
+
+  testWidgets('Bills page deletes a monthly bill record', (
+    WidgetTester tester,
+  ) async {
+    final billRepository = _FakeBillRepository();
+    final billType = BillType.create(name: 'Su', isRecurringMonthly: false);
+    await billRepository.addBillType(billType);
+    await billRepository.addMonthlyBill(
+      MonthlyBill.fromBillType(
+        billType: billType,
+        year: DateTime.now().year,
+        month: DateTime.now().month,
+      ).withDetails(amount: 300),
+    );
+
+    await tester.pumpWidget(
+      EvApp(
+        dependencies: AppDependencies(
+          personRepository: _FakePersonRepository(),
+          expenseRepository: _FakeExpenseRepository(),
+          billRepository: billRepository,
+        ),
+      ),
+    );
+    await tester.pump();
+
+    await tester.tap(find.text('Fatura'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('300.00 TL'), findsOneWidget);
+
+    await tester.tap(find.byTooltip('Aylık faturayı sil'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('300.00 TL'), findsNothing);
+  });
+
+  testWidgets('Deleting a recurring monthly bill does not recreate it', (
+    WidgetTester tester,
+  ) async {
+    final billRepository = _FakeBillRepository();
+    await billRepository.addBillType(BillType.create(name: 'Elektrik'));
+
+    await tester.pumpWidget(
+      EvApp(
+        dependencies: AppDependencies(
+          personRepository: _FakePersonRepository(),
+          expenseRepository: _FakeExpenseRepository(),
+          billRepository: billRepository,
+        ),
+      ),
+    );
+    await tester.pump();
+
+    await tester.tap(find.text('Fatura'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Elektrik'), findsWidgets);
+
+    await tester.tap(find.byTooltip('Aylık faturayı sil'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Elektrik'), findsOneWidget);
+    expect(find.text('Tutar Bekleniyor'), findsNothing);
+  });
+
+  testWidgets('Deleting a paid monthly bill removes its generated expense', (
+    WidgetTester tester,
+  ) async {
+    final personRepository = _FakePersonRepository();
+    final me = await personRepository.getMe();
+    final billRepository = _FakeBillRepository();
+    final expenseRepository = _FakeExpenseRepository();
+    final billType = BillType.create(name: 'Elektrik');
+    final generatedExpense = Expense.create(
+      title: 'Elektrik',
+      category: 'Fatura',
+      totalAmount: 800,
+      spentAt: DateTime.now(),
+      paidByPersonId: me!.id,
+      splitType: SplitType.equal,
+      participantIds: [me.id],
+    );
+
+    await billRepository.addBillType(billType);
+    await expenseRepository.addExpense(generatedExpense);
+    await billRepository.addMonthlyBill(
+      MonthlyBill.fromBillType(
+            billType: billType,
+            year: DateTime.now().year,
+            month: DateTime.now().month,
+          )
+          .withDetails(amount: 800)
+          .markedPaid(generatedExpenseId: generatedExpense.id),
+    );
+
+    await tester.pumpWidget(
+      EvApp(
+        dependencies: AppDependencies(
+          personRepository: personRepository,
+          expenseRepository: expenseRepository,
+          billRepository: billRepository,
+        ),
+      ),
+    );
+    await tester.pump();
+
+    await tester.tap(find.text('Fatura'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('800.00 TL'), findsOneWidget);
+
+    await tester.tap(find.byTooltip('Aylık faturayı sil'));
+    await tester.pumpAndSettle();
+
+    expect(await expenseRepository.getExpenses(), isEmpty);
+
+    await tester.tap(find.byIcon(Icons.dashboard_outlined));
+    await tester.pumpAndSettle();
+
+    expect(find.text('400.00 TL'), findsNothing);
+    expect(find.text('800.00 TL'), findsNothing);
+    expect(find.text('0.00 TL'), findsWidgets);
+  });
+
+  testWidgets('Full expense and bill workflow keeps totals consistent', (
+    WidgetTester tester,
+  ) async {
+    final personRepository = _FakePersonRepository.withRoommate();
+    final persons = await personRepository.getPersons();
+    final me = persons.firstWhere((person) => person.isMe);
+    final expenseRepository = _FakeExpenseRepository();
+    final billRepository = _FakeBillRepository();
+
+    await tester.pumpWidget(
+      EvApp(
+        dependencies: AppDependencies(
+          personRepository: personRepository,
+          expenseRepository: expenseRepository,
+          billRepository: billRepository,
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.text('Masraf'));
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.byTooltip('Masraf ekle').first);
+    await tester.pumpAndSettle();
+    await tester.enterText(find.byType(TextFormField).at(0), 'Market');
+    await tester.enterText(find.byType(TextFormField).at(2), '1000');
+    await tester.tap(find.text('Ortak eşit'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Kaydet'));
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.byTooltip('Masraf ekle').first);
+    await tester.pumpAndSettle();
+    await tester.enterText(find.byType(TextFormField).at(0), 'Kahve');
+    await tester.enterText(find.byType(TextFormField).at(2), '200');
+    await tester.tap(find.text('Kaydet'));
+    await tester.pumpAndSettle();
+
+    var expenses = await expenseRepository.getExpenses();
+    expect(expenses, hasLength(2));
+    expect(
+      expenses
+          .firstWhere((expense) => expense.title == 'Market')
+          .shareFor(me.id),
+      500,
+    );
+    expect(
+      expenses
+          .firstWhere((expense) => expense.title == 'Kahve')
+          .shareFor(me.id),
+      200,
+    );
+
+    await tester.tap(find.byIcon(Icons.dashboard_outlined));
+    await tester.pumpAndSettle();
+    expect(find.text('700.00 TL'), findsOneWidget);
+    expect(find.text('1200.00 TL'), findsOneWidget);
+
+    await tester.tap(find.text('Fatura'));
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.byTooltip('Fatura türü ekle'));
+    await tester.pumpAndSettle();
+    await tester.enterText(
+      find.widgetWithText(TextFormField, 'Fatura adı'),
+      'Elektrik',
+    );
+    await tester.tap(find.text('Kaydet'));
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.text('Tutar gir').first);
+    await tester.pumpAndSettle();
+    await tester.enterText(find.byType(TextFormField).first, '800');
+    await tester.tap(find.text('Kaydet'));
+    await tester.pumpAndSettle();
+
+    final electricityPaidButton = find.ancestor(
+      of: find.text('Ödendi işaretle').first,
+      matching: find.byType(TextButton),
+    );
+    await tester.drag(find.byType(ListView), const Offset(0, -240));
+    await tester.pumpAndSettle();
+    await tester.ensureVisible(electricityPaidButton);
+    await tester.tap(electricityPaidButton);
+    await tester.pumpAndSettle();
+
+    expenses = await expenseRepository.getExpenses();
+    final electricityExpense = expenses.firstWhere(
+      (expense) => expense.title == 'Elektrik',
+    );
+    expect(electricityExpense.totalAmount, 800);
+    expect(electricityExpense.shareFor(me.id), 400);
+
+    await tester.tap(find.byIcon(Icons.dashboard_outlined));
+    await tester.pumpAndSettle();
+    expect(find.text('1100.00 TL'), findsOneWidget);
+    expect(find.text('2000.00 TL'), findsOneWidget);
+
+    await tester.tap(find.text('Fatura'));
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.byTooltip('Fatura türü ekle'));
+    await tester.pumpAndSettle();
+    await tester.enterText(
+      find.widgetWithText(TextFormField, 'Fatura adı'),
+      'Netflix',
+    );
+    await tester.tap(find.text('Kişisel'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Sabit tutar'));
+    await tester.pumpAndSettle();
+    await tester.enterText(find.byType(TextFormField).last, '150');
+    await tester.tap(find.text('Kaydet'));
+    await tester.pumpAndSettle();
+
+    final netflixPaidButton = find.ancestor(
+      of: find.text('Ödendi işaretle').last,
+      matching: find.byType(TextButton),
+    );
+    await tester.drag(find.byType(ListView), const Offset(0, -240));
+    await tester.pumpAndSettle();
+    await tester.ensureVisible(netflixPaidButton);
+    await tester.tap(netflixPaidButton);
+    await tester.pumpAndSettle();
+
+    expenses = await expenseRepository.getExpenses();
+    final netflixExpense = expenses.firstWhere(
+      (expense) => expense.title == 'Netflix',
+    );
+    expect(netflixExpense.totalAmount, 150);
+    expect(netflixExpense.shareFor(me.id), 150);
+
+    await tester.tap(find.byIcon(Icons.dashboard_outlined));
+    await tester.pumpAndSettle();
+    expect(find.text('1250.00 TL'), findsOneWidget);
+    expect(find.text('2150.00 TL'), findsOneWidget);
+
+    await tester.tap(find.text('Fatura'));
+    await tester.pumpAndSettle();
+    await tester.drag(find.byType(ListView), const Offset(0, -240));
+    await tester.pumpAndSettle();
+    await tester.tap(find.byTooltip('Aylık faturayı sil').first);
+    await tester.pumpAndSettle();
+
+    expenses = await expenseRepository.getExpenses();
+    expect(expenses.where((expense) => expense.title == 'Elektrik'), isEmpty);
+    expect(
+      expenses
+          .firstWhere((expense) => expense.title == 'Netflix')
+          .shareFor(me.id),
+      150,
+    );
+
+    await tester.tap(find.byIcon(Icons.dashboard_outlined));
+    await tester.pumpAndSettle();
+    expect(find.text('850.00 TL'), findsOneWidget);
+    expect(find.text('1350.00 TL'), findsOneWidget);
   });
 }
 
@@ -301,5 +888,101 @@ class _FakeExpenseRepository implements ExpenseRepository {
   @override
   Future<List<Expense>> getExpenses() async {
     return _expenses.where((expense) => !expense.isDeleted).toList();
+  }
+}
+
+class _FakeBillRepository implements BillRepository {
+  final List<BillType> _billTypes = [];
+  final List<MonthlyBill> _monthlyBills = [];
+
+  @override
+  Future<void> addBillType(BillType billType) async {
+    _billTypes.add(billType);
+  }
+
+  @override
+  Future<void> deleteBillType(String billTypeId) async {
+    final index = _billTypes.indexWhere(
+      (billType) => billType.id == billTypeId,
+    );
+
+    if (index == -1) {
+      return;
+    }
+
+    _billTypes[index] = _billTypes[index].markedDeleted();
+  }
+
+  @override
+  Future<void> addMonthlyBill(MonthlyBill monthlyBill) async {
+    _monthlyBills.add(monthlyBill);
+  }
+
+  @override
+  Future<void> deleteMonthlyBill(String monthlyBillId) async {
+    final index = _monthlyBills.indexWhere(
+      (monthlyBill) => monthlyBill.id == monthlyBillId,
+    );
+
+    if (index == -1) {
+      return;
+    }
+
+    _monthlyBills[index] = _monthlyBills[index].markedDeleted();
+  }
+
+  @override
+  Future<List<BillType>> getBillTypes() async {
+    return _billTypes.where((billType) => !billType.isDeleted).toList();
+  }
+
+  @override
+  Future<List<MonthlyBill>> getMonthlyBills() async {
+    return _monthlyBills
+        .where((monthlyBill) => !monthlyBill.isDeleted)
+        .toList();
+  }
+
+  @override
+  Future<void> ensureMonthlyBillsForMonth({
+    required int year,
+    required int month,
+  }) async {
+    for (final billType in _billTypes.where(
+      (item) => item.isRecurringMonthly,
+    )) {
+      final alreadyExists = _monthlyBills.any(
+        (monthlyBill) =>
+            monthlyBill.billTypeId == billType.id &&
+            monthlyBill.year == year &&
+            monthlyBill.month == month,
+      );
+
+      if (alreadyExists) {
+        continue;
+      }
+
+      _monthlyBills.add(
+        MonthlyBill.fromBillType(billType: billType, year: year, month: month),
+      );
+    }
+  }
+
+  @override
+  Future<void> markMonthlyBillPaid({
+    required String monthlyBillId,
+    String? generatedExpenseId,
+  }) async {
+    final index = _monthlyBills.indexWhere(
+      (monthlyBill) => monthlyBill.id == monthlyBillId,
+    );
+
+    if (index == -1) {
+      return;
+    }
+
+    _monthlyBills[index] = _monthlyBills[index].markedPaid(
+      generatedExpenseId: generatedExpenseId,
+    );
   }
 }

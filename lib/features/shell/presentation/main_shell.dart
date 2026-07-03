@@ -31,7 +31,11 @@ class _MainShellState extends State<MainShell> {
         personRepository: widget.dependencies.personRepository,
         expenseRepository: widget.dependencies.expenseRepository,
       ),
-      const BillsPage(),
+      BillsPage(
+        billRepository: widget.dependencies.billRepository,
+        expenseRepository: widget.dependencies.expenseRepository,
+        personRepository: widget.dependencies.personRepository,
+      ),
       const ShoppingPage(),
       const TasksPage(),
       SettingsPage(personRepository: widget.dependencies.personRepository),

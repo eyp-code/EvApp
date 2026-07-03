@@ -1,5 +1,33 @@
 # EvApp AI Tracking
 
+## Guncel Dokuman Toparlama - 2026-07-03
+
+Masraf ve fatura MVP'si tamamlanan calisan nokta olarak dokumanlara islendi.
+
+Guncellenen dosyalar:
+
+- `README.md`
+- `PROJECT_PLAN.md`
+- `03_DATA_MODELS_AND_STORAGE.md`
+- `04_FEATURE_SPECIFICATIONS.md`
+- `06_DEVELOPMENT_ROADMAP.md`
+- `AI_TRACKING.md`
+
+Guncel durum:
+
+- Masraf sistemi ve fatura sistemi ayni pay hesaplama mantigini kullaniyor.
+- Ortak/esit tutarlar kullanici payina yarim yaziliyor.
+- Kisisel tutarlar tam yaziliyor.
+- Odendi isaretlenen faturalar otomatik masrafa donusuyor.
+- Aylik fatura silinirse bagli masraf da dashboard toplamindan dusuyor.
+- Fatura turu silinse bile eski odenmis aylik kayitlar korunuyor.
+- Son dogrulamada 19 test basarili.
+
+Siradaki adim:
+
+- Mevcut MVP noktasini commit ile sabitlemek.
+- Sonra JSON backup / restore altyapisina gecmek.
+
 Bu dosya proje boyunca AI ile yapılan kararları, kod değişikliklerini ve gerekçeleri takip etmek için tutulur. Her geliştirme adımında buraya kısa ama net kayıt eklenecek.
 
 ## Kullanım Kuralı
@@ -600,3 +628,268 @@ Phase 1 ile başlamak:
   - Bill datasource/repository.
   - Fatura turu ekleme.
   - Aylik fatura ekleme ve odendi isaretleme.
+
+### 2026-07-03 - Phase 6 Bill System MVP Ilk Parca
+
+**Ne yaptik**
+
+- Fatura sistemi icin ilk domain modelleri eklendi:
+  - `BillType`
+  - `MonthlyBill`
+- Hive box isimleri eklendi:
+  - `bill_types_box`
+  - `monthly_bills_box`
+- Bill data source ve repository katmani eklendi.
+- `AppDependencies` icine `BillRepository` baglandi.
+- Bootstrap sirasinda fatura box'lari acilacak hale getirildi.
+- Faturalar ekrani placeholder olmaktan cikarildi:
+  - Fatura turu eklenebiliyor.
+  - Aylik fatura kaydi eklenebiliyor.
+  - Fatura tutari girilebiliyor.
+  - Aylik fatura `Odendi` olarak isaretlenebiliyor.
+  - Fatura turleri ve aylik fatura kayitlari listeleniyor.
+- Widget testlerine fatura turu ekleme ve aylik faturayi odendi isaretleme akislari eklendi.
+
+**Nasil kodladik**
+
+- UI dogrudan Hive kullanmiyor; `BillsPage` sadece `BillRepository` ile konusuyor.
+- Modeller mevcut local-first kurala uygun olarak JSON map seklinde saklaniyor.
+- `MonthlyBill` ay/yil, tutar ve odeme durumunu tek kayitta tutuyor.
+- Odendi isaretleme fiziksel degisiklik yerine modelin `markedPaid` helper'i ile tarih ve sync alanlarini guncelliyor.
+
+**Neden boyle yaptik**
+
+- Fatura sistemini bildirim, gecikme ve rapor gibi ek ozelliklere gecmeden once local kayit/listeleme temelinde calisir hale getirdik.
+- `BillType` ve `MonthlyBill` ayrimi sayesinde gecmis ay fatura tutarlari saklanabilecek.
+- Repository siniri korunarak ileride backup/restore ve Firebase gecisi kolaylastirildi.
+
+**Degisen dosyalar**
+
+- `lib/core/storage/hive_box_names.dart`
+- `lib/bootstrap.dart`
+- `lib/features/shell/presentation/main_shell.dart`
+- `lib/features/bills/domain/models/bill_type.dart`
+- `lib/features/bills/domain/models/monthly_bill.dart`
+- `lib/features/bills/domain/repositories/bill_repository.dart`
+- `lib/features/bills/data/data_sources/bill_local_data_source.dart`
+- `lib/features/bills/data/repositories/local_bill_repository.dart`
+- `lib/features/bills/presentation/pages/bills_page.dart`
+- `test/widget_test.dart`
+- `AI_TRACKING.md`
+
+**Dogrulama**
+
+- `dart format lib test` basarili.
+- `flutter analyze` basarili, issue yok.
+- `flutter test` basarili, 9 test gecti.
+
+**Sonraki adim**
+
+- Bill MVP kucuk saglamlastirma:
+  - Varsayilan fatura turlerini seed etmek.
+  - Fatura formunda ayni tur/ay/yil tekrarini engellemek.
+  - Fatura silme veya duzenleme ihtiyacini netlestirmek.
+  - Dashboard'da bekleyen fatura ozetini gostermek.
+
+### 2026-07-03 - Fatura Yonetim Sistemi Gereksinimlerine Gore Model Genisletme
+
+**Ne yaptik**
+
+- Fatura turu modeli tekrarlayan fatura sablonu olacak sekilde genisletildi.
+- `BillCategory` eklendi:
+  - Ev faturasi / paylasimli
+  - Kisisel fatura
+- `BillShareType` eklendi:
+  - %100 bana ait
+  - %50 - %50
+  - Ozel yuzde
+  - Sabit tutar paylasimi
+- `BillStatus` eklendi:
+  - Tutar Bekleniyor
+  - Odenmeye Hazir
+  - Odendi
+  - Gecikti
+- `MonthlyBill` artik tutarsiz kayit destekliyor; tutar yoksa durum `Tutar Bekleniyor` oluyor.
+- `MonthlyBill` icine not, son odeme tarihi altyapisi ve otomatik harcamaya baglanmak icin `generatedExpenseId` alani eklendi.
+- Fatura turlerinde su alanlar destekleniyor:
+  - Aylik tekrarlayan
+  - Sabit tutar
+  - Sabit tutar degeri
+  - Paylasim tipi
+  - Benim yuzdem
+  - Partner yuzdesi
+- Fatura ekleme dialog'u kategori, tekrarlama, sabit tutar ve paylasim tipi sececek sekilde genisletildi.
+- Fatura ekrani acildiginda icinde bulunulan ay icin tekrarlayan faturalar otomatik olusturuluyor.
+- Varsayilan fatura turleri seed edildi:
+  - Elektrik, Su, Dogalgaz, Internet, Kira, Aidat
+  - Telefon, Kredi Karti, Sigorta, Netflix
+- Widget testine tekrarlayan faturanin otomatik `Tutar Bekleniyor` olusturulmasi eklendi.
+
+**Neden boyle yaptik**
+
+- Kullanicinin her ay faturayi hatirlamasi gerekmemeli; sistem ay kaydini onceden olusturmali.
+- Elektrik/su gibi degisken tutarli faturalar icin tutar bos kalabilmeli.
+- Netflix/Spotify gibi sabit tutarli kayitlar icin sabit tutar altyapisi hazirlandi.
+- Paylasim tipi fatura sablonunda tutuldugu icin ileride odendi denince otomatik masraf kaydi uretilebilir.
+
+**Henuz yapilmayanlar**
+
+- Odendi denince otomatik `Expense` olusturma.
+- Dashboard finans ozetine fatura kaynakli harcamalari baglama.
+- Butce guncelleme.
+- Local notification / hatirlatma frekansi.
+- Son odeme tarihi secici UI.
+- Gecikti durumunu tarih bazli otomatik hesaplama.
+- Gecmis fatura detay ekrani.
+
+**Dogrulama**
+
+- `dart format lib test` basarili.
+- `flutter analyze` basarili, issue yok.
+- `flutter test` basarili, 10 test gecti.
+
+### 2026-07-03 - Ortak Esit Pay Merkezi Hesabi Duzeltildi
+
+**Ne degisti**
+
+- `Expense.create` icindeki `Ortak esit` pay hesabi merkezi olarak duzeltildi.
+- Kisi listesinde sadece kullanici olsa bile ortak/esit masraf benim payima toplam tutarin yarisi olarak yaziliyor.
+- `Sadece bana ait` masraflar tam tutari kullanmaya devam ediyor.
+- Fatura odemeleri de masraf kaydi urettigi icin ayni yarim pay mantigini otomatik kullanir hale geldi.
+- Odenmis aylik fatura kaydi alttaki listeden silinirse, ona bagli otomatik masraf kaydi da siliniyor.
+- Bu sayede silinen fatura tutari ana ekrandaki masraf/toplam ozetinden dusuyor.
+- Tekrarlayan aylik fatura kaydi silinirse ayni ay icin refresh sonrasi otomatik yeniden uretilmiyor.
+- Bastan sona kullanici akisi icin kapsamli widget testi eklendi:
+  - Ortak masraf, kisisel masraf, ortak fatura, sabit kisisel fatura, dashboard toplamları ve aylik fatura silme birlikte dogrulaniyor.
+
+**Dogrulama**
+
+- `dart format lib test` basarili.
+- `flutter analyze` basarili, issue yok.
+- `flutter test` basarili, 19 test gecti.
+
+### 2026-07-03 - Fatura Odeme ve Aylik Liste Davranisi Duzeltildi
+
+**Ne yaptik**
+
+- Tutar bekleyen faturalar artik dogrudan `Odendi` isaretlenemiyor.
+- Tutar bekleyen faturalarda `Tutar gir` aksiyonu gosteriliyor.
+- Tutar girildikten sonra fatura durumu `Odenmeye Hazir` oluyor.
+- `Odendi isaretle` sadece tutari olan ve odenmemis faturalarda gosteriliyor.
+- `Odendi` denince fatura otomatik olarak masraf kaydina donusuyor.
+- Olusan masraf dashboard finans ozetine yansiyor.
+- Aylik tekrarlayan fatura turu olusunca mevcut ay ve sonraki aylar icin aylik kayitlar otomatik uretiliyor.
+- Aylik fatura listesi ay/yil basliklariyla gruplandirildi.
+- Fatura turleri silinebiliyor; silinen tur aktif listeden ve aylik fatura gorunumunden kalkiyor.
+
+**Neden boyle yaptik**
+
+- Tutar belli olmayan faturanin odenmesi finans ozetini yanlis yapardi.
+- Kullanici tekrarlayan fatura icin ayrica aylik fatura eklemek zorunda kalmamali.
+- Fatura odemesi ikinci kez manuel masraf girisi gerektirmemeli.
+- Ana ozet ekrani fatura odemelerini de masraf olarak gormeli.
+
+**Dogrulama**
+
+- `dart format lib test` basarili.
+- `flutter analyze` basarili, issue yok.
+- `flutter test` basarili, 12 test gecti.
+
+### 2026-07-03 - Paylasilan Fatura Hesabi ve Ay Uretimi Duzeltildi
+
+**Ne degisti**
+
+- Aylik tekrarlayan fatura turleri artik sadece icinde bulunulan ay icin otomatik kayit olusturuyor.
+- Gelecek aylar onceden listelenmiyor.
+- Ay ilerledikce yeni ay ustte olusacak; eski ay kayitlari asagida gecmis olarak kalacak.
+- Paylasilan fatura odendiginde olusan masraf `Ortak esit` masraf gibi ikiye bolunuyor.
+- Dashboard testiyle 800 TL paylasilan fatura icin kullanici payinin 400 TL oldugu dogrulandi.
+
+**Neden**
+
+- Kullanici sadece mevcut ayin fatura listesini gormek istiyor.
+- Gelecek ay kayitlarini onceden gostermek listeyi gereksiz kalabaliklastiriyordu.
+- Faturalar finans ozetinde masraflarla ayni hesaplama dilini kullanmali.
+
+**Dogrulama**
+
+- `dart format lib test` basarili.
+- `flutter analyze` basarili, issue yok.
+- `flutter test` basarili, 13 test gecti.
+
+### 2026-07-03 - Fatura Paylasimi ve Silinen Tur Gecmisi Duzeltildi
+
+**Ne degisti**
+
+- Fatura turu formunda paylasim ayri secim olmaktan cikarildi.
+- `Ev faturasi` otomatik olarak `Ortak esit` kabul ediliyor.
+- `Kisisel` otomatik olarak `Sadece bana ait` kabul ediliyor.
+- Odeme sirasinda fatura paylasimi artik kategoriye gore belirleniyor; bu sayede ev faturasi masraflardaki ortak esit masraf gibi bolunuyor.
+- Aylik fatura kaydina fatura turu adi snapshot olarak eklendi.
+- Fatura turu silinse bile eski odenmis aylik kayitlar listede kalmaya devam ediyor.
+- Silinen fatura turune ait bekleyen/odenmemis otomatik kayitlar aktif listeden gizleniyor.
+
+**Neden**
+
+- Paylasim dropdown'u hataya acikti; ev faturasi olmasina ragmen kullanici veya state tarafinda `Sadece bana ait` kalabiliyordu.
+- Gecmis odemeler finans ve arsiv kaydi oldugu icin fatura turu silinse de kaybolmamali.
+
+**Dogrulama**
+
+- `dart format lib test` basarili.
+- `flutter analyze` basarili, issue yok.
+- `flutter test` basarili, 14 test gecti.
+
+### 2026-07-03 - Fatura Paylasimi Masraf Mantigina Sabitlendi
+
+**Ne degisti**
+
+- Fatura turu eklerken paylasim dropdown'u tamamen kaldirildi.
+- `Ev faturasi` secimi dogrudan masraf mantigindaki `Ortak esit` davranisina baglandi.
+- `Kisisel` secimi dogrudan masraf mantigindaki `Sadece bana ait` davranisina baglandi.
+- Fatura odemesi masraf kaydina donusurken artik kategoriye gore `SplitType.equal` veya `SplitType.onlyMe` uretiyor.
+- Silinen fatura turunun eski odenmis aylik kayitlari ad snapshot'i ile gorunmeye devam ediyor.
+- Aylik fatura kayitlari icin de silme butonu eklendi.
+
+**Neden**
+
+- Paylasim secimi ayri kalinca ev faturasi ile masraf paylasim mantigi arasinda tutarsizlik olusabiliyordu.
+- Fatura mantigi masraf mantigini tekrar icat etmemeli; odemede dogrudan ayni `Expense.create` yolunu kullanmali.
+- Kullanici hem fatura turunu hem de tekil aylik fatura kaydini silebilmeli.
+
+**Dogrulama**
+
+- `dart format lib test` basarili.
+- `flutter analyze` basarili, issue yok.
+- `flutter test` basarili, 15 test gecti.
+
+**Sonraki adim**
+
+- Odendi denince fatura kaydindan otomatik masraf uretmek:
+  - Fatura tutarini `Expense` olarak eklemek.
+  - Paylasim tipine gore `ExpenseShare` uretmek.
+  - `MonthlyBill.generatedExpenseId` ile tekrar harcama olusmasini engellemek.
+  - Dashboard toplamlarini otomatik guncel hale getirmek.
+
+### 2026-07-03 - Fatura Paylasim Karari Sadelestirildi
+
+**Urun karari**
+
+- Fatura paylasiminda ozel yuzde ve sabit tutar paylasimi olmayacak.
+- Masraflar ekranindaki gibi iki secenek kalacak:
+  - `Sadece bana ait`
+  - `Ortak esit`
+- Sabit tutar ozelligi devam edecek, fakat bu paylasim icin degil faturanin toplam tutari icin kullanilacak.
+
+**Kod degisikligi**
+
+- Fatura turu ekleme formundan ozel yuzde ve sabit tutar paylasimi secenekleri kaldirildi.
+- Fatura paylasim metinleri `Sadece bana ait` ve `Ortak esit` olarak sadeleştirildi.
+- Kullanilmayan sabit pay alanlari `BillType` modelinden kaldirildi.
+- `BillShareType` sadece `onlyMe` ve `equal` degerlerini tutacak hale getirildi.
+
+**Dogrulama**
+
+- `dart format lib test` basarili.
+- `flutter analyze` basarili, issue yok.
+- `flutter test` basarili, 10 test gecti.

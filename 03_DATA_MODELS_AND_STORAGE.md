@@ -1,5 +1,34 @@
 # 03 - Data Models and Local Storage
 
+## Guncel Model Notu - 2026-07-03
+
+Kodda calisan masraf/fatura veri modeli su sekildedir:
+
+- `Expense`
+  - `splitType` degerleri aktif olarak `onlyMe` ve `equal` kullanir.
+  - `onlyMe` tam tutari kullanici payina yazar.
+  - `equal` ortak esit paylasimdir ve kullanici payina toplam tutarin yarisini yazar.
+  - Faturadan olusan harcamalar da ayni `Expense.create` yolunu kullanir.
+- `BillType`
+  - Fatura sablonudur.
+  - Ev faturasi / kisisel fatura kategorisini tutar.
+  - Aylik tekrarlama ve sabit tutar bilgisini tutar.
+  - Soft delete ile silinir.
+- `MonthlyBill`
+  - Belirli ay/yil icin fatura kaydidir.
+  - `billTypeName` snapshot alani sayesinde fatura turu silinse bile eski odenmis kayit adini korur.
+  - `generatedExpenseId` ile odeme sirasinda uretilen masraf kaydina baglanir.
+  - Aylik fatura silinirse bu bagli masraf kaydi da soft delete edilir.
+
+Aktif Hive box'lari:
+
+```text
+persons_box
+expenses_box
+bill_types_box
+monthly_bills_box
+```
+
 ## Genel Veri Yaklaşımı
 
 EvApp ilk sürümde verileri local olarak saklayacaktır.

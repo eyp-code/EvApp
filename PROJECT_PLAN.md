@@ -1,5 +1,45 @@
 # EvApp - Local First Project Plan
 
+## Guncel Proje Durumu - 2026-07-03
+
+Bu noktada calisan MVP parcasi:
+
+- Local-first Flutter uygulama iskeleti.
+- Hive tabanli local storage.
+- Kisi / ev arkadasi sistemi.
+- Masraf ekleme, listeleme ve silme.
+- `Sadece bana ait` ve `Ortak esit` paylasim mantigi.
+- Dashboard finans ozeti.
+- Fatura turu ekleme.
+- Aylik fatura kaydi olusturma.
+- Tutar bekleyen fatura akisi.
+- Fatura odeme ve otomatik masraf olusturma.
+- Sabit tutarli kisisel fatura.
+- Aylik fatura silme ve bagli masrafi dashboard toplamindan dusme.
+- Fatura turu silinince eski odenmis aylik kayitlari koruma.
+
+Guncel urun kararlari:
+
+- Borc/alacak veya net borc hesabi yok.
+- Ana takip metrigi `Bana yazilan toplam`.
+- Ortak/esit harcamalar ve ev faturalari ikiye bolunur.
+- Kisisel masraflar ve kisisel faturalar tam tutari kullaniciya yazar.
+
+Son dogrulama:
+
+```text
+dart format lib test
+flutter analyze
+flutter test
+```
+
+19 test basarili gecmistir.
+
+Siradaki onerilen adim:
+
+- Mevcut MVP noktasini commit ile sabitlemek.
+- Sonra JSON backup / restore altyapisina gecmek.
+
 > Ev masrafı, fatura, abonelik, bütçe, alışveriş ve ev görevi takip uygulaması.
 
 Bu dosya EvApp projesinin ana planıdır. Diğer `.md` dosyaları bu planın detaylarını içerir.

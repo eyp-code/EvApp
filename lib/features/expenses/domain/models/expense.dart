@@ -175,9 +175,15 @@ class Expense {
       return const [];
     }
 
-    if (splitType == SplitType.onlyMe || participantIds.length == 1) {
+    if (splitType == SplitType.onlyMe) {
       return [
         ExpenseShare(personId: participantIds.first, amount: totalAmount),
+      ];
+    }
+
+    if (participantIds.length == 1) {
+      return [
+        ExpenseShare(personId: participantIds.first, amount: totalAmount / 2),
       ];
     }
 

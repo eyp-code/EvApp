@@ -3,4 +3,6 @@ class HiveBoxNames {
 
   static const persons = 'persons_box';
   static const expenses = 'expenses_box';
+  static const billTypes = 'bill_types_box';
+  static const monthlyBills = 'monthly_bills_box';
 }
