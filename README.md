@@ -53,6 +53,12 @@ flutter test
 
 Son test durumunda 19 test basarili gecmistir.
 
+## Commit Kurali
+
+AI proje icinde `git commit` calistirmaz. Commit atma isi proje sahibine aittir.
+
+Kullanici commit isterse AI sadece commit mesaji ve komut onerisi verir.
+
 ## Dokumanlar
 
 Detayli proje dokumanlari:
@@ -72,6 +78,7 @@ Detayli proje dokumanlari:
 
 Onerilen siradaki teknik adim:
 
-1. Fatura ve masraf MVP degisikliklerini commit etmek.
-2. JSON backup / restore altyapisina gecmek.
-3. Backup oncesi mevcut Hive box yapisini ve export formatini netlestirmek.
+1. JSON backup / restore altyapisina gecmek.
+2. Backup oncesi mevcut Hive box yapisini ve export formatini netlestirmek.
+3. Export/import icin testleri yazmak.
+4. Ayarlar ekranina yedek disari aktar / ice aktar aksiyonlarini eklemek.

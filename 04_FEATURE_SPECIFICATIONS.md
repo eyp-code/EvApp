@@ -28,6 +28,23 @@ paid: Odendi
 overdue: Gecikti
 ```
 
+Siradaki ozellik:
+
+- JSON backup / restore.
+
+Beklenen kullanici akisi:
+
+```text
+Ayarlar -> Yedek disari aktar -> JSON dosyasi olusur
+Ayarlar -> Yedek ice aktar -> JSON secilir -> veriler geri yuklenir
+```
+
+Ilk surumda import davranisi:
+
+- Mevcut veriler yedekteki verilerle degistirilir.
+- Kullaniciya islem oncesi uyari gosterilir.
+- Gecersiz JSON veya eksik alan varsa import yapilmaz.
+
 Bu dosya EvApp özelliklerinin detaylı davranışlarını açıklar.
 
 ---

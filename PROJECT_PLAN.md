@@ -24,6 +24,8 @@ Guncel urun kararlari:
 - Ana takip metrigi `Bana yazilan toplam`.
 - Ortak/esit harcamalar ve ev faturalari ikiye bolunur.
 - Kisisel masraflar ve kisisel faturalar tam tutari kullaniciya yazar.
+- AI proje icinde commit atmaz; commit karari ve uygulamasi proje sahibine aittir.
+- AI, istenirse sadece commit mesaji ve komut onerisi verir.
 
 Son dogrulama:
 
@@ -37,8 +39,36 @@ flutter test
 
 Siradaki onerilen adim:
 
-- Mevcut MVP noktasini commit ile sabitlemek.
-- Sonra JSON backup / restore altyapisina gecmek.
+- JSON backup / restore altyapisina gecmek.
+
+## Siradaki Gelistirme Sureci - JSON Backup / Restore
+
+Amac:
+
+- Local-first uygulamada verinin kaybolmasini onlemek.
+- Mevcut Hive verilerini okunabilir bir JSON dosyasi olarak disari aktarmak.
+- Kullanici isterse bu dosyayi tekrar ice aktarabilmek.
+
+Ilk kapsam:
+
+- `persons`
+- `expenses`
+- `billTypes`
+- `monthlyBills`
+
+Ilk import stratejisi:
+
+- `Replace All`
+- Mevcut ilgili box verileri temizlenir.
+- Yedekteki veriler geri yuklenir.
+
+Kabul kriterleri:
+
+- Export JSON icinde backup versiyonu, olusturulma tarihi ve tum aktif model listeleri bulunur.
+- Import sonrasi kisi, masraf, fatura turu ve aylik fatura kayitlari geri gelir.
+- Soft delete ve sync alanlari korunur.
+- Import hatasinda kullaniciya anlasilir hata gosterilir.
+- Backup/restore icin unit veya widget testleri eklenir.
 
 > Ev masrafı, fatura, abonelik, bütçe, alışveriş ve ev görevi takip uygulaması.
 

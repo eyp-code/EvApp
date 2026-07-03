@@ -1,5 +1,20 @@
 # 02 - Local First Architecture
 
+## Guncel Mimari Notu - 2026-07-03
+
+Mevcut calisan uygulama local-first kararina uygun ilerliyor:
+
+- UI katmani repository arayuzleriyle konusuyor.
+- Veriler Hive box'larinda tutuluyor.
+- Person, expense, bill type ve monthly bill kayitlari soft delete alanlariyla saklaniyor.
+- Fatura odemeleri masraf repository'sine `Expense` olarak aktariliyor.
+
+Siradaki mimari adim:
+
+- `BackupService` ile repository/data source katmanlarinin uzerinden JSON export/import akisi kurmak.
+- UI'nin yine Hive detayini bilmemesini saglamak.
+- Import islemi icin ilk surumde `Replace All` stratejisi kullanmak.
+
 ## Mimari Kararı
 
 EvApp ilk sürümde **local-first** geliştirilecektir.

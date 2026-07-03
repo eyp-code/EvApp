@@ -1,5 +1,41 @@
 # 05 - Backup, Restore and Migration
 
+## Guncel Uygulama Plani - 2026-07-03
+
+Siradaki gelistirme adimi bu dosyadaki JSON backup / restore kapsamidir.
+
+Ilk implementasyon kapsami:
+
+- `BackupService`
+- Export JSON modeli
+- Import JSON parse/validate akisi
+- Ayarlar ekraninda:
+  - `Yedek disari aktar`
+  - `Yedek ice aktar`
+- Testler:
+  - Export JSON beklenen alanlari icerir.
+  - Import kisileri geri yukler.
+  - Import masraflari geri yukler.
+  - Import fatura turlerini ve aylik faturalarini geri yukler.
+  - Soft delete alanlari korunur.
+
+Ilk surumda export edilecek veri setleri:
+
+```text
+persons
+expenses
+billTypes
+monthlyBills
+```
+
+Ilk surumda import stratejisi:
+
+```text
+Replace All
+```
+
+Yani mevcut ilgili Hive box verileri temizlenir ve JSON icindeki kayitlar ayni id'lerle geri yazilir.
+
 ## Amaç
 
 İlk sürümde veriler Hive ile cihazda tutulacağı için başka cihaza otomatik geçmez.

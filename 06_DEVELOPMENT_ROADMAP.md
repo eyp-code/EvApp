@@ -35,15 +35,15 @@ Guncel test durumu:
 
 Siradaki onerilen phase:
 
-1. Bu MVP noktasini commit ile sabitle.
-2. Phase 12 icinden once JSON backup / restore altyapisini one cek.
-3. Export formatina mevcut box'lari ekle:
+1. Phase 12 icinden JSON backup / restore altyapisini one cek.
+2. Export formatina mevcut box'lari ekle:
    - persons
    - expenses
    - billTypes
    - monthlyBills
-4. Import icin ilk surumde `Replace All` stratejisini uygula.
-5. Backup/restore icin repository ve widget testleri ekle.
+3. Import icin ilk surumde `Replace All` stratejisini uygula.
+4. Backup/restore icin repository ve widget testleri ekle.
+5. Ayarlar ekranina yedek disari aktar / ice aktar aksiyonlarini ekle.
 
 Bu dosya EvApp’in hangi sırayla geliştirileceğini açıklar.
 

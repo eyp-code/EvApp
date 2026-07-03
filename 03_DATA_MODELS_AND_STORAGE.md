@@ -29,6 +29,13 @@ bill_types_box
 monthly_bills_box
 ```
 
+Siradaki model/storage adimi:
+
+- Backup JSON formatini mevcut aktif box'lara gore netlestirmek.
+- `backupVersion` alanini zorunlu tutmak.
+- Export edilen her modelde `id`, `createdAt`, `updatedAt`, `isDeleted`, `deletedAt`, `syncStatus` alanlarini korumak.
+- Import sirasinda once mevcut box'lari temizleyip sonra JSON icindeki kayitlari ayni id'lerle geri yazmak.
+
 ## Genel Veri Yaklaşımı
 
 EvApp ilk sürümde verileri local olarak saklayacaktır.

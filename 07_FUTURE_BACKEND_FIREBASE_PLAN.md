@@ -1,5 +1,22 @@
 # 07 - Future Backend and Firebase Plan
 
+## Guncel Backend Karari - 2026-07-03
+
+Backend/Firebase henuz siradaki adim degil.
+
+Once tamamlanmasi gereken local-first guvenlik katmani:
+
+- JSON backup export.
+- JSON backup import.
+- Replace All import stratejisi.
+- Mevcut aktif box'larin yedeklenmesi:
+  - persons
+  - expenses
+  - billTypes
+  - monthlyBills
+
+Bu tamamlanmadan Firebase'e gecilmeyecek. Backup formatinin oturmasi ileride remote sync ve migration icin de temel olacak.
+
 Bu dosya, EvApp’in ileride Firebase veya özel backend’e nasıl geçirileceğini açıklar.
 
 İlk sürümde backend kullanılmayacaktır.

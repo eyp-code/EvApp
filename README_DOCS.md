@@ -10,6 +10,31 @@ Bu versiyonun ana kararı:
 
 ---
 
+## Guncel Dokuman Durumu - 2026-07-03
+
+Masraf ve fatura MVP'si calisan noktaya geldi. Dokumanlarda bundan sonraki ana gelistirme hedefi JSON backup / restore olarak belirlenmistir.
+
+Guncel okuma sirasi:
+
+1. `README.md`
+2. `PROJECT_PLAN.md`
+3. `06_DEVELOPMENT_ROADMAP.md`
+4. `05_BACKUP_RESTORE_AND_MIGRATION.md`
+5. `AI_TRACKING.md`
+
+Commit kurali:
+
+- AI `git commit` calistirmaz.
+- Commit atma isi proje sahibine aittir.
+- AI sadece commit mesaji ve komut onerisi verir.
+
+Siradaki teknik hedef:
+
+- Backup JSON formatini netlestirmek.
+- `persons`, `expenses`, `billTypes`, `monthlyBills` verilerini export etmek.
+- Ayni verileri `Replace All` stratejisiyle import etmek.
+- Ayarlar ekranina yedek aksiyonlarini eklemek.
+
 ## Dosyalar
 
 | Dosya                                | Amaç                                                                          |

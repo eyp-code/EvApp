@@ -1,5 +1,12 @@
 # EvApp AI Tracking
 
+## Commit Kurali
+
+- AI asla `git commit` calistirmaz.
+- Commit atma isi proje sahibine aittir.
+- Kullanici commit isterse AI sadece commit mesaji ve komut onerisi verir.
+- Stage/commit kararini proje sahibi uygular.
+
 ## Guncel Dokuman Toparlama - 2026-07-03
 
 Masraf ve fatura MVP'si tamamlanan calisan nokta olarak dokumanlara islendi.
@@ -25,8 +32,27 @@ Guncel durum:
 
 Siradaki adim:
 
-- Mevcut MVP noktasini commit ile sabitlemek.
+- Kullanici isterse mevcut MVP noktasi icin commit onerisi vermek.
 - Sonra JSON backup / restore altyapisina gecmek.
+
+## Gun Sonu Dokuman Kapanisi - 2026-07-03
+
+Bugunluk proje kapanisi icin tum ana markdown dokumanlari siradaki gelistirme surecini gosterecek sekilde guncellendi.
+
+Guncellenen konu:
+
+- Masraf + fatura MVP'sinin tamamlanan calisan kapsam oldugu.
+- Sonraki ana teknik adimin JSON backup / restore oldugu.
+- Backup kapsaminda ilk export/import veri setlerinin `persons`, `expenses`, `billTypes`, `monthlyBills` olacagi.
+- Import stratejisinin ilk surumde `Replace All` olacagi.
+- Backend/Firebase adiminin backup/restore tamamlanana kadar bekleyecegi.
+
+Commit kurali:
+
+- AI asla `git commit` calistirmaz.
+- Commit atma isi her zaman proje sahibine aittir.
+- Kullanici commit isterse AI yalnizca degisikliklere uygun commit mesaji ve komut onerisi verir.
+- Kod veya dokuman degisikliklerini commit'e alma karari proje sahibindedir.
 
 Bu dosya proje boyunca AI ile yapılan kararları, kod değişikliklerini ve gerekçeleri takip etmek için tutulur. Her geliştirme adımında buraya kısa ama net kayıt eklenecek.
 

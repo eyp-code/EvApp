@@ -1,5 +1,27 @@
 # 01 - Project Overview
 
+## Guncel Kapanis Notu - 2026-07-03
+
+Bugun itibariyla masraf ve fatura MVP'si calisan noktaya geldi.
+
+Tamamlanan ana akislari:
+
+- Kisi / ev arkadasi sistemi.
+- Masraf ekleme, listeleme ve silme.
+- `Sadece bana ait` ve `Ortak esit` hesaplama.
+- Dashboard finans ozeti.
+- Fatura turu ekleme.
+- Aylik tekrarlayan fatura kaydi.
+- Sabit tutarli fatura.
+- Fatura odendiginde otomatik masraf olusturma.
+- Aylik fatura silindiginde bagli masrafi da silme.
+
+Siradaki gelistirme hedefi:
+
+- JSON backup / restore.
+
+Bu adimdan sonra uygulama verileri disari aktarilip geri yuklenebilecek. Bu, local-first mimari icin yeni ozelliklerden once tamamlanmasi gereken guvenlik katmanidir.
+
 ## Proje Adı
 
 **EvApp**
