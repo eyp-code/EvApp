@@ -439,3 +439,31 @@ Sonra:
 > Güncel hesaplama kararı: `Benim payım` yalnızca ortak bölünen masraflardan kullanıcıya düşen tutardır. `Kişisel harcamam`, ortak pay + sadece bana ait masraflar toplamıdır. Borç/alacak ve net borç hesapları kapsam dışıdır.
 > Güncel Dashboard hesaplama dili: Ana takip metriği `Bana yazılan toplam`dır. Bu değer ortak masraflardaki benim payım + sadece bana ait masraflardan oluşur. `Ortak masraflar`, `Benim ortak payım`, `Sadece benim masraflarım` ve `Bu ay girilen toplam` ayrı gösterilir. Borç/alacak veya net borç hesabı yapılmaz.
 > Güncel Dashboard hesaplama dili: Ana takip metriği `Bana yazılan toplam`dır. Bu değer ortak masraflardaki benim payım + sadece bana ait masraflardan oluşur. `Ortak masraflar`, `Benim ortak payım`, `Sadece benim masraflarım` ve `Bu ay girilen toplam` ayrı gösterilir. Borç/alacak veya net borç hesabı yapılmaz.
+## Ara Sonrası Devam Notu - 2026-07-03
+
+Mevcut çalışan temel:
+
+- Person / roommate sistemi.
+- Expense MVP:
+  - Masraf ekleme
+  - Masraf listeleme
+  - Masraf silme
+  - `Sadece bana ait`
+  - `Ortak eşit`
+- Dashboard masraf özeti:
+  - `Bana yazılan toplam`
+  - `Ortak masraflar`
+  - `Benim ortak payım`
+  - `Sadece benim masraflarım`
+  - `Bu ay girilen toplam`
+
+Ara sonrası önerilen sıra:
+
+1. Mevcut Expense MVP manuel test edilip commitlenecek.
+2. Küçük sağlamlaştırma yapılacak:
+   - Ortak eşit senaryo kontrolü
+   - Form validasyon mesajları
+   - Masraf kartında tarih/kategori görünümü
+3. Sonra fatura sistemi MVP'ye geçilecek.
+
+Borç/alacak ve net borç hesabı kapsam dışı kalmaya devam edecek.

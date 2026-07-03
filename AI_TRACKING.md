@@ -528,3 +528,38 @@ Phase 1 ile başlamak:
 - Masraf formundaki split etiketi `Sadece bana ait` olarak güncellendi.
 - Dashboard widget testi yeni hesaplama dili ve örnek senaryoya göre güncellendi.
 - Tüm markdown dokümanlarının başına güncel Dashboard hesaplama dili notu eklendi.
+### 2026-07-03 - Ara Sonrası Devam Planı
+
+**Mevcut durum**
+
+- Phase 3 Person / Roommate sistemi temel olarak çalışıyor.
+- Phase 4 Expense MVP temel akışı çalışıyor:
+  - Masraf ekleme
+  - Masraf listeleme
+  - Masraf silme
+  - `Sadece bana ait` ve `Ortak eşit` split tipleri
+  - Dashboard masraf özeti
+- Güncel Dashboard dili:
+  - `Bana yazılan toplam`
+  - `Ortak masraflar`
+  - `Benim ortak payım`
+  - `Sadece benim masraflarım`
+  - `Bu ay girilen toplam`
+- Borç/alacak ve net borç hesabı kapsam dışı.
+
+**Ara sonrası önerilen sıra**
+
+1. Mevcut Expense MVP manuel test edilecek ve commitlenecek.
+2. Kısa sağlamlaştırma adımı:
+   - Ortak eşit masraf ekleme manuel olarak doğrulanacak.
+   - Gerekirse masraf kartlarında tarih/kategori görünümü sadeleştirilecek.
+   - Form validasyon mesajları eklenecek.
+3. Sonra iki yoldan biri seçilecek:
+   - Seçenek A: Masraf düzenleme ve kategori iyileştirmesi.
+   - Seçenek B: Phase 6 Bill System MVP'ye geçiş.
+
+**Önerim**
+
+- Önce küçük sağlamlaştırma adımı yapılmalı.
+- Ardından fatura sistemi MVP'ye geçmek daha mantıklı.
+- Çünkü uygulamanın ana omurgası masraf + kişi + dashboard olarak çalışır hale geldi; sıradaki büyük MVP parçası fatura takibi.
