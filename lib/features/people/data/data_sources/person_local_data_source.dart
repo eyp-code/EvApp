@@ -14,6 +14,16 @@ class PersonLocalDataSource {
         .toList();
   }
 
+  Future<Person?> getPersonById(String id) async {
+    final value = _box.get(id);
+
+    if (value == null) {
+      return null;
+    }
+
+    return Person.fromJson(Map<String, dynamic>.from(value));
+  }
+
   Future<void> savePerson(Person person) async {
     await _box.put(person.id, person.toJson());
   }

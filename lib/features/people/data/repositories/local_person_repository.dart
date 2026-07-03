@@ -29,4 +29,20 @@ class LocalPersonRepository implements PersonRepository {
   Future<void> addPerson(Person person) {
     return _dataSource.savePerson(person);
   }
+
+  @override
+  Future<void> updatePerson(Person person) {
+    return _dataSource.savePerson(person);
+  }
+
+  @override
+  Future<void> deletePerson(String personId) async {
+    final person = await _dataSource.getPersonById(personId);
+
+    if (person == null || person.isMe) {
+      return;
+    }
+
+    await _dataSource.savePerson(person.markedDeleted());
+  }
 }

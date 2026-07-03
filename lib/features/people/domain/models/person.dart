@@ -28,6 +28,20 @@ class Person {
     );
   }
 
+  factory Person.createRoommate({required String name}) {
+    final now = DateTime.now();
+
+    return Person(
+      id: const Uuid().v4(),
+      name: name,
+      isMe: false,
+      avatarColor: '#4F46E5',
+      createdAt: now,
+      updatedAt: now,
+      isDeleted: false,
+    );
+  }
+
   factory Person.fromJson(Map<String, dynamic> json) {
     return Person(
       id: json['id'] as String,
@@ -57,6 +71,49 @@ class Person {
   final DateTime? deletedAt;
   final String syncStatus;
   final DateTime? lastSyncedAt;
+
+  Person copyWith({
+    String? name,
+    bool? isMe,
+    String? avatarColor,
+    DateTime? updatedAt,
+    bool? isDeleted,
+    DateTime? deletedAt,
+    String? syncStatus,
+    DateTime? lastSyncedAt,
+  }) {
+    return Person(
+      id: id,
+      name: name ?? this.name,
+      isMe: isMe ?? this.isMe,
+      avatarColor: avatarColor ?? this.avatarColor,
+      createdAt: createdAt,
+      updatedAt: updatedAt ?? this.updatedAt,
+      isDeleted: isDeleted ?? this.isDeleted,
+      deletedAt: deletedAt ?? this.deletedAt,
+      syncStatus: syncStatus ?? this.syncStatus,
+      lastSyncedAt: lastSyncedAt ?? this.lastSyncedAt,
+    );
+  }
+
+  Person renamed(String name) {
+    return copyWith(
+      name: name,
+      updatedAt: DateTime.now(),
+      syncStatus: SyncStatus.pendingUpdate,
+    );
+  }
+
+  Person markedDeleted() {
+    final now = DateTime.now();
+
+    return copyWith(
+      updatedAt: now,
+      isDeleted: true,
+      deletedAt: now,
+      syncStatus: SyncStatus.pendingDelete,
+    );
+  }
 
   Map<String, dynamic> toJson() {
     return {

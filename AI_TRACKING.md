@@ -283,3 +283,51 @@ Phase 1 ile başlamak:
 - ExpenseCalculator yazılırken debt/net debt fonksiyonları eklenmeyecek.
 - `paidByPersonId` alanı yine tutulabilir, ama borç üretmek için değil; sadece "bu kaydı kim ödedi?" bilgisini saklamak için.
 - AI ileride eski dokümanlarda borç ifadesi görürse bu tracking kararını daha güncel kaynak kabul edecek.
+### 2026-07-03 - Phase 3 Person / Roommate Sistemi Başlangıcı
+
+**Ne yaptık**
+
+- `Person` modeli ev arkadaşı oluşturma, isim güncelleme ve soft delete akışını destekleyecek şekilde genişletildi.
+- `PersonRepository` sözleşmesine `updatePerson` ve `deletePerson` eklendi.
+- Hive data source içine id ile kişi okuma desteği eklendi.
+- Local repository içinde `Ben` kaydının silinmesini engelleyen soft delete davranışı yazıldı.
+- Ayarlar ekranında gerçek kişi yönetimi bölümü oluşturuldu:
+  - Mevcut kişiler listeleniyor.
+  - Ev arkadaşı eklenebiliyor.
+  - Kişi ismi düzenlenebiliyor.
+  - Ev arkadaşı silinebiliyor.
+- Widget testine ev arkadaşı ekleme akışı eklendi.
+
+**Nasıl kodladık**
+
+- UI yine doğrudan Hive kullanmıyor; Ayarlar ekranı sadece `PersonRepository` ile konuşuyor.
+- Silme işlemi fiziksel kayıt silme değil, `isDeleted`, `deletedAt` ve `pendingDelete` alanlarını güncelleyen soft delete olarak kaldı.
+- `Person.createRoommate`, `renamed` ve `markedDeleted` helper'ları model üzerinde tutuldu; böylece tarih ve sync alanları tek yerde güncelleniyor.
+- Dialog içindeki `TextEditingController` ayrı stateful dialog içinde yönetildi. Testte yakalanan dispose zamanlaması hatası bu şekilde düzeltildi.
+
+**Neden böyle yaptık**
+
+- Masraf MVP'ye geçmeden önce kişi listesinin gerçek local veriden gelmesi gerekiyor.
+- Masraf formunda "kim ödedi?" ve "kimlerin payı var?" seçimleri bu repository üzerinden beslenecek.
+- Soft delete geçmiş masraf kayıtlarının ileride bozulmaması için şimdiden doğru varsayılan davranış.
+
+**Değişen dosyalar**
+
+- `lib/features/people/domain/models/person.dart`
+- `lib/features/people/domain/repositories/person_repository.dart`
+- `lib/features/people/data/data_sources/person_local_data_source.dart`
+- `lib/features/people/data/repositories/local_person_repository.dart`
+- `lib/features/settings/presentation/pages/settings_page.dart`
+- `test/widget_test.dart`
+- `AI_TRACKING.md`
+
+**Doğrulama**
+
+- `dart format lib test` başarılı.
+- `flutter analyze` başarılı, issue yok.
+- `flutter test` başarılı, tüm testler geçti.
+
+**Sonraki adım**
+
+- Phase 3'ü küçük bir tamamlayıcı adımla güçlendirmek: kişi düzenleme/silme akışları için ek widget testleri eklenebilir.
+- Ardından Phase 4 Expense MVP'ye geçilecek: `Expense`, `ExpenseShare`, ilk split tipleri ve masraf ekleme/listeleme ekranı.

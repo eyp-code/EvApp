@@ -6,4 +6,8 @@ abstract class PersonRepository {
   Future<Person?> getMe();
 
   Future<void> addPerson(Person person);
+
+  Future<void> updatePerson(Person person);
+
+  Future<void> deletePerson(String personId);
 }
