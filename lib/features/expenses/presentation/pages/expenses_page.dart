@@ -141,6 +141,7 @@ class _AddExpenseDialog extends StatefulWidget {
 }
 
 class _AddExpenseDialogState extends State<_AddExpenseDialog> {
+  final _formKey = GlobalKey<FormState>();
   final _titleController = TextEditingController();
   final _categoryController = TextEditingController(text: 'Market');
   final _amountController = TextEditingController();
@@ -163,13 +164,9 @@ class _AddExpenseDialogState extends State<_AddExpenseDialog> {
   }
 
   void _submit() {
-    final title = _titleController.text.trim();
-    final category = _categoryController.text.trim();
-    final amountText = _amountController.text.trim().replaceAll(',', '.');
-    final amount = double.tryParse(amountText);
     final me = widget.persons.where((person) => person.isMe).firstOrNull;
 
-    if (title.isEmpty || category.isEmpty || amount == null || amount <= 0) {
+    if (!(_formKey.currentState?.validate() ?? false)) {
       return;
     }
 
@@ -177,6 +174,10 @@ class _AddExpenseDialogState extends State<_AddExpenseDialog> {
       return;
     }
 
+    final title = _titleController.text.trim();
+    final category = _categoryController.text.trim();
+    final amountText = _amountController.text.trim().replaceAll(',', '.');
+    final amount = double.parse(amountText);
     final participantIds = _splitType == SplitType.onlyMe
         ? [me.id]
         : widget.persons.map((person) => person.id).toList();
@@ -199,73 +200,100 @@ class _AddExpenseDialogState extends State<_AddExpenseDialog> {
     return AlertDialog(
       title: const Text('Masraf ekle'),
       content: SingleChildScrollView(
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            TextField(
-              controller: _titleController,
-              autofocus: true,
-              textInputAction: TextInputAction.next,
-              decoration: const InputDecoration(labelText: 'Başlık'),
-            ),
-            const SizedBox(height: 12),
-            TextField(
-              controller: _categoryController,
-              textInputAction: TextInputAction.next,
-              decoration: const InputDecoration(labelText: 'Kategori'),
-            ),
-            const SizedBox(height: 12),
-            TextField(
-              controller: _amountController,
-              keyboardType: const TextInputType.numberWithOptions(
-                decimal: true,
-              ),
-              textInputAction: TextInputAction.done,
-              decoration: const InputDecoration(labelText: 'Tutar'),
-              onSubmitted: (_) => _submit(),
-            ),
-            const SizedBox(height: 16),
-            DropdownButtonFormField<String>(
-              initialValue: _paidByPersonId,
-              decoration: const InputDecoration(labelText: 'Kim ödedi?'),
-              items: widget.persons
-                  .map(
-                    (person) => DropdownMenuItem(
-                      value: person.id,
-                      child: Text(person.name),
-                    ),
-                  )
-                  .toList(),
-              onChanged: (value) {
-                if (value == null) {
-                  return;
-                }
+        child: Form(
+          key: _formKey,
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              TextFormField(
+                controller: _titleController,
+                autofocus: true,
+                textInputAction: TextInputAction.next,
+                validator: (value) {
+                  if (value == null || value.trim().isEmpty) {
+                    return 'Başlık gerekli';
+                  }
 
-                setState(() {
-                  _paidByPersonId = value;
-                });
-              },
-            ),
-            const SizedBox(height: 16),
-            SegmentedButton<String>(
-              segments: const [
-                ButtonSegment(
-                  value: SplitType.onlyMe,
-                  label: Text('Sadece bana ait'),
+                  return null;
+                },
+                decoration: const InputDecoration(labelText: 'Başlık'),
+              ),
+              const SizedBox(height: 12),
+              TextFormField(
+                controller: _categoryController,
+                textInputAction: TextInputAction.next,
+                validator: (value) {
+                  if (value == null || value.trim().isEmpty) {
+                    return 'Kategori gerekli';
+                  }
+
+                  return null;
+                },
+                decoration: const InputDecoration(labelText: 'Kategori'),
+              ),
+              const SizedBox(height: 12),
+              TextFormField(
+                controller: _amountController,
+                keyboardType: const TextInputType.numberWithOptions(
+                  decimal: true,
                 ),
-                ButtonSegment(
-                  value: SplitType.equal,
-                  label: Text('Ortak eşit'),
-                ),
-              ],
-              selected: {_splitType},
-              onSelectionChanged: (selection) {
-                setState(() {
-                  _splitType = selection.first;
-                });
-              },
-            ),
-          ],
+                textInputAction: TextInputAction.done,
+                decoration: const InputDecoration(labelText: 'Tutar'),
+                onFieldSubmitted: (_) => _submit(),
+                validator: (value) {
+                  final amountText = (value ?? '').trim().replaceAll(',', '.');
+                  final amount = double.tryParse(amountText);
+
+                  if (amount == null || amount <= 0) {
+                    return 'Geçerli bir tutar gir';
+                  }
+
+                  return null;
+                },
+              ),
+              const SizedBox(height: 16),
+              DropdownButtonFormField<String>(
+                initialValue: _paidByPersonId,
+                decoration: const InputDecoration(labelText: 'Kim ödedi?'),
+                items: widget.persons
+                    .map(
+                      (person) => DropdownMenuItem(
+                        value: person.id,
+                        child: Text(person.name),
+                      ),
+                    )
+                    .toList(),
+                onChanged: (value) {
+                  if (value == null) {
+                    return;
+                  }
+
+                  setState(() {
+                    _paidByPersonId = value;
+                  });
+                },
+              ),
+              const SizedBox(height: 16),
+              SegmentedButton<String>(
+                segments: const [
+                  ButtonSegment(
+                    value: SplitType.onlyMe,
+                    label: Text('Sadece bana ait'),
+                  ),
+                  ButtonSegment(
+                    value: SplitType.equal,
+                    label: Text('Ortak eşit'),
+                  ),
+                ],
+                selected: {_splitType},
+                onSelectionChanged: (selection) {
+                  setState(() {
+                    _splitType = selection.first;
+                  });
+                },
+              ),
+            ],
+          ),
         ),
       ),
       actions: [
@@ -323,6 +351,13 @@ class _ExpenseCard extends StatelessWidget {
                       Text(
                         '${expense.category} • Ödeyen: $paidBy',
                         style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                          color: colorScheme.onSurfaceVariant,
+                        ),
+                      ),
+                      const SizedBox(height: 2),
+                      Text(
+                        _formatDate(expense.spentAt),
+                        style: Theme.of(context).textTheme.bodySmall?.copyWith(
                           color: colorScheme.onSurfaceVariant,
                         ),
                       ),
@@ -492,4 +527,11 @@ class _PageHeader extends StatelessWidget {
 
 String _formatAmount(double amount) {
   return '${amount.toStringAsFixed(2)} TL';
+}
+
+String _formatDate(DateTime date) {
+  final day = date.day.toString().padLeft(2, '0');
+  final month = date.month.toString().padLeft(2, '0');
+
+  return '$day.$month.${date.year}';
 }

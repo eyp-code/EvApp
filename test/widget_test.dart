@@ -88,6 +88,65 @@ void main() {
     expect(find.text('Benim payım: 1200.00 TL'), findsOneWidget);
   });
 
+  testWidgets('Expenses page validates required fields', (
+    WidgetTester tester,
+  ) async {
+    await tester.pumpWidget(
+      EvApp(
+        dependencies: AppDependencies(
+          personRepository: _FakePersonRepository(),
+          expenseRepository: _FakeExpenseRepository(),
+        ),
+      ),
+    );
+    await tester.pump();
+
+    await tester.tap(find.text('Masraf'));
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.byTooltip('Masraf ekle').first);
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.text('Kaydet'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Başlık gerekli'), findsOneWidget);
+    expect(find.text('Geçerli bir tutar gir'), findsOneWidget);
+    expect(find.byType(AlertDialog), findsOneWidget);
+  });
+
+  testWidgets('Expenses page adds an equal shared expense', (
+    WidgetTester tester,
+  ) async {
+    await tester.pumpWidget(
+      EvApp(
+        dependencies: AppDependencies(
+          personRepository: _FakePersonRepository.withRoommate(),
+          expenseRepository: _FakeExpenseRepository(),
+        ),
+      ),
+    );
+    await tester.pump();
+
+    await tester.tap(find.text('Masraf'));
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.byTooltip('Masraf ekle').first);
+    await tester.pumpAndSettle();
+
+    await tester.enterText(find.byType(TextFormField).at(0), 'Market');
+    await tester.enterText(find.byType(TextFormField).at(2), '1200');
+    await tester.tap(find.text('Ortak eşit'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Kaydet'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Market'), findsOneWidget);
+    expect(find.text('1200.00 TL'), findsOneWidget);
+    expect(find.text('Benim payım: 600.00 TL'), findsOneWidget);
+    expect(find.text('Ortak eşit bölündü'), findsOneWidget);
+  });
+
   testWidgets('Expenses page deletes an expense', (WidgetTester tester) async {
     await tester.pumpWidget(
       EvApp(

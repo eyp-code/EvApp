@@ -563,3 +563,40 @@ Phase 1 ile başlamak:
 - Önce küçük sağlamlaştırma adımı yapılmalı.
 - Ardından fatura sistemi MVP'ye geçmek daha mantıklı.
 - Çünkü uygulamanın ana omurgası masraf + kişi + dashboard olarak çalışır hale geldi; sıradaki büyük MVP parçası fatura takibi.
+
+### 2026-07-03 - Expense MVP Saglamlastirma
+
+**Ne yaptik**
+
+- Masraf ekleme formu `Form` ve `TextFormField` yapisina alindi.
+- Bos baslik ve gecersiz tutar icin kullaniciya validasyon mesaji gosteriliyor.
+- Masraf kartina harcama tarihi eklendi.
+- Ortak esit masraf ekleme akisi widget testiyle dogrulandi.
+- Form validasyon mesajlari icin widget testi eklendi.
+
+**Neden boyle yaptik**
+
+- Expense MVP artik sadece mutlu yolu degil, hatali form girislerini de kullaniciya acik sekilde yonetiyor.
+- Ortak esit bolme, dashboard hesaplarinin temel girdisi oldugu icin otomatik test kapsamina alindi.
+- Masraf tarihinin kartta gorunmesi fatura sistemine gecmeden once liste okunabilirligini artirdi.
+
+**Degisen dosyalar**
+
+- `lib/features/expenses/presentation/pages/expenses_page.dart`
+- `test/widget_test.dart`
+- `AI_TRACKING.md`
+
+**Dogrulama**
+
+- `dart format lib test` basarili.
+- `flutter analyze` basarili, issue yok.
+- `flutter test` basarili, tum testler gecti.
+
+**Sonraki adim**
+
+- Phase 6 Bill System MVP'ye gecilecek:
+  - `BillType` ve `MonthlyBill` modelleri.
+  - Hive box isimleri.
+  - Bill datasource/repository.
+  - Fatura turu ekleme.
+  - Aylik fatura ekleme ve odendi isaretleme.
