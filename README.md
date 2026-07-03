@@ -63,16 +63,16 @@ Kullanici commit isterse AI sadece commit mesaji ve komut onerisi verir.
 
 Detayli proje dokumanlari:
 
-- `PROJECT_PLAN.md`
-- `README_DOCS.md`
-- `01_PROJECT_OVERVIEW.md`
-- `02_LOCAL_FIRST_ARCHITECTURE.md`
-- `03_DATA_MODELS_AND_STORAGE.md`
-- `04_FEATURE_SPECIFICATIONS.md`
-- `05_BACKUP_RESTORE_AND_MIGRATION.md`
-- `06_DEVELOPMENT_ROADMAP.md`
-- `07_FUTURE_BACKEND_FIREBASE_PLAN.md`
-- `AI_TRACKING.md`
+- `docs/PROJECT_PLAN.md`
+- `docs/README_DOCS.md`
+- `docs/01_PROJECT_OVERVIEW.md`
+- `docs/02_LOCAL_FIRST_ARCHITECTURE.md`
+- `docs/03_DATA_MODELS_AND_STORAGE.md`
+- `docs/04_FEATURE_SPECIFICATIONS.md`
+- `docs/05_BACKUP_RESTORE_AND_MIGRATION.md`
+- `docs/06_DEVELOPMENT_ROADMAP.md`
+- `docs/07_FUTURE_BACKEND_FIREBASE_PLAN.md`
+- `docs/AI_TRACKING.md`
 
 ## Siradaki Adim
 

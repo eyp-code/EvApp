@@ -7,6 +7,29 @@
 - Kullanici commit isterse AI sadece commit mesaji ve komut onerisi verir.
 - Stage/commit kararini proje sahibi uygular.
 
+## Dokuman Klasoru Duzeni - 2026-07-03
+
+GitHub kok dizini daha temiz gorunsun diye proje dokumanlari `docs/` klasorune tasindi.
+
+Kok dizinde kalan dosya:
+
+- `README.md`
+
+`docs/` altina tasinan dosyalar:
+
+- `PROJECT_PLAN.md`
+- `README_DOCS.md`
+- `01_PROJECT_OVERVIEW.md`
+- `02_LOCAL_FIRST_ARCHITECTURE.md`
+- `03_DATA_MODELS_AND_STORAGE.md`
+- `04_FEATURE_SPECIFICATIONS.md`
+- `05_BACKUP_RESTORE_AND_MIGRATION.md`
+- `06_DEVELOPMENT_ROADMAP.md`
+- `07_FUTURE_BACKEND_FIREBASE_PLAN.md`
+- `AI_TRACKING.md`
+
+README icindeki dokuman yollari `docs/...` olarak guncellendi.
+
 ## Guncel Dokuman Toparlama - 2026-07-03
 
 Masraf ve fatura MVP'si tamamlanan calisan nokta olarak dokumanlara islendi.
