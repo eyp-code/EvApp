@@ -331,3 +331,62 @@ Phase 1 ile başlamak:
 
 - Phase 3'ü küçük bir tamamlayıcı adımla güçlendirmek: kişi düzenleme/silme akışları için ek widget testleri eklenebilir.
 - Ardından Phase 4 Expense MVP'ye geçilecek: `Expense`, `ExpenseShare`, ilk split tipleri ve masraf ekleme/listeleme ekranı.
+### 2026-07-03 - Phase 4 Expense MVP İlk Parça
+
+**Ne yaptık**
+
+- Masraf takibi için ilk domain modelleri eklendi:
+  - `Expense`
+  - `ExpenseShare`
+  - `SplitType`
+- `expenses_box` Hive box adı tanımlandı.
+- Expense data source ve repository katmanı eklendi.
+- `AppDependencies` içine `ExpenseRepository` bağlandı.
+- Bootstrap sırasında `expenses_box` açılacak hale getirildi.
+- Masraflar ekranı placeholder olmaktan çıkarıldı:
+  - Masraf listesi gösteriliyor.
+  - Boş state gösteriliyor.
+  - Masraf ekleme dialog'u açılıyor.
+  - Başlık, kategori, tutar, ödeyen kişi ve paylaşım tipi seçiliyor.
+  - İlk split tipleri: `Sadece benim` ve `Ortak eşit`.
+  - Liste kartında toplam tutar, ödeyen kişi, kategori ve benim payım görünüyor.
+- Widget testine "sadece benim" masraf ekleme senaryosu eklendi.
+
+**Nasıl kodladık**
+
+- UI yine doğrudan Hive kullanmıyor; `ExpensesPage` sadece `PersonRepository` ve `ExpenseRepository` ile konuşuyor.
+- Masraf paylaşım tutarları `Expense.create` içinde hesaplanıyor.
+- `Sadece benim` masrafta pay doğrudan `Ben` kişisine yazılıyor.
+- `Ortak eşit` masrafta tutar mevcut kişi sayısına eşit bölünüyor.
+- Borç/alacak hesabı eklenmedi; yalnızca pay bilgisi tutuluyor.
+
+**Neden böyle yaptık**
+
+- MVP için önce masrafın local olarak kaydedilip listelenmesi gerekiyor.
+- Pay hesabını modelde toplamak, ileride dashboard ve rapor ekranlarının aynı veriyi tekrar hesaplamadan kullanmasını sağlar.
+- İlk parçada düzenleme/silme/filtreleme eklenmedi; kapsam bilinçli olarak küçük tutuldu.
+
+**Değişen dosyalar**
+
+- `lib/core/storage/hive_box_names.dart`
+- `lib/bootstrap.dart`
+- `lib/features/shell/presentation/main_shell.dart`
+- `lib/features/expenses/domain/models/expense.dart`
+- `lib/features/expenses/domain/models/expense_share.dart`
+- `lib/features/expenses/domain/models/split_type.dart`
+- `lib/features/expenses/domain/repositories/expense_repository.dart`
+- `lib/features/expenses/data/data_sources/expense_local_data_source.dart`
+- `lib/features/expenses/data/repositories/local_expense_repository.dart`
+- `lib/features/expenses/presentation/pages/expenses_page.dart`
+- `test/widget_test.dart`
+- `AI_TRACKING.md`
+
+**Doğrulama**
+
+- `dart format lib test` başarılı.
+- `flutter analyze` başarılı, issue yok.
+- `flutter test` başarılı, tüm testler geçti.
+
+**Sonraki adım**
+
+- Masraf MVP'nin ikinci parçası: ortak eşit bölme için manuel test/test kapsamı, masraf silme ve dashboard finans özetine gerçek toplamların bağlanması.

@@ -24,7 +24,10 @@ class _MainShellState extends State<MainShell> {
   Widget build(BuildContext context) {
     final pages = [
       DashboardPage(personRepository: widget.dependencies.personRepository),
-      const ExpensesPage(),
+      ExpensesPage(
+        personRepository: widget.dependencies.personRepository,
+        expenseRepository: widget.dependencies.expenseRepository,
+      ),
       const BillsPage(),
       const ShoppingPage(),
       const TasksPage(),
