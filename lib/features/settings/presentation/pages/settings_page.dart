@@ -105,7 +105,7 @@ class _SettingsPageState extends State<SettingsPage> {
       builder: (context) => AlertDialog(
         title: const Text('Yedek içe aktar'),
         content: const Text(
-          'Bu işlem mevcut verileri seçilen yedekle değiştirecek. Devam etmek istiyor musun?',
+          'Bu işlem mevcut verileri seçilen yedekle değiştirecek. Devam etmeden önce manuel yedek alman önerilir. Devam etmek istiyor musun?',
         ),
         actions: [
           TextButton(

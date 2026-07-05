@@ -26,6 +26,11 @@ Calisan temel akislari:
   - Fatura odendiginde otomatik masraf kaydi olusturma.
   - Aylik fatura silindiginde bagli masrafi da silme.
   - Fatura turu silindiginde eski odenmis aylik kayitlari koruma.
+- Backup sistemi:
+  - JSON yedek disa aktarma.
+  - JSON yedek ice aktarma.
+  - Import oncesi kullanici uyarisi.
+  - `Replace All` import davranisi.
 
 ## Hesaplama Karari
 
@@ -51,7 +56,7 @@ flutter analyze
 flutter test
 ```
 
-Son test durumunda 19 test basarili gecmistir.
+Son test durumunda 24 test basarili gecmistir.
 
 ## Commit Kurali
 
@@ -78,7 +83,13 @@ Detayli proje dokumanlari:
 
 Onerilen siradaki teknik adim:
 
-1. JSON backup / restore altyapisina gecmek.
-2. Backup oncesi mevcut Hive box yapisini ve export formatini netlestirmek.
-3. Export/import icin testleri yazmak.
-4. Ayarlar ekranina yedek disari aktar / ice aktar aksiyonlarini eklemek.
+1. Shopping List MVP'ye gecmek.
+2. `ShoppingItem` modeli ve `shopping_items_box` eklemek.
+3. Repository / datasource katmanini kurmak.
+4. Urun ekleme, listeleme ve satin alindi isaretleme akisini yazmak.
+
+Backup icin sonra ele alinacak hardening isleri:
+
+- import oncesi otomatik on-yedek
+- import/export sonrasi detayli ozet
+- daha siki JSON sema dogrulamasi

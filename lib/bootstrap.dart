@@ -19,12 +19,16 @@ import 'features/people/data/data_sources/person_local_data_source.dart';
 import 'features/people/data/repositories/local_person_repository.dart';
 import 'features/people/domain/models/person.dart';
 import 'features/people/domain/repositories/person_repository.dart';
+import 'features/shopping/data/data_sources/shopping_local_data_source.dart';
+import 'features/shopping/data/repositories/local_shopping_repository.dart';
+import 'features/shopping/domain/repositories/shopping_repository.dart';
 
 class AppDependencies {
   const AppDependencies({
     required this.personRepository,
     required this.expenseRepository,
     required this.billRepository,
+    this.shoppingRepository,
     this.backupService,
     this.fileBackupGateway,
   });
@@ -32,6 +36,7 @@ class AppDependencies {
   final PersonRepository personRepository;
   final ExpenseRepository expenseRepository;
   final BillRepository billRepository;
+  final ShoppingRepository? shoppingRepository;
   final BackupService? backupService;
   final FileBackupGateway? fileBackupGateway;
 }
@@ -43,6 +48,7 @@ Future<AppDependencies> bootstrapApp() async {
   final expensesBox = await Hive.openBox<Map>(HiveBoxNames.expenses);
   final billTypesBox = await Hive.openBox<Map>(HiveBoxNames.billTypes);
   final monthlyBillsBox = await Hive.openBox<Map>(HiveBoxNames.monthlyBills);
+  final shoppingItemsBox = await Hive.openBox<Map>(HiveBoxNames.shoppingItems);
 
   final personDataSource = PersonLocalDataSource(personsBox);
   final personRepository = LocalPersonRepository(personDataSource);
@@ -53,6 +59,8 @@ Future<AppDependencies> bootstrapApp() async {
     monthlyBillsBox: monthlyBillsBox,
   );
   final billRepository = LocalBillRepository(billDataSource);
+  final shoppingDataSource = ShoppingLocalDataSource(shoppingItemsBox);
+  final shoppingRepository = LocalShoppingRepository(shoppingDataSource);
   final backupService = BackupService(
     _LocalBackupStore(
       personRepository: personRepository,
@@ -68,6 +76,7 @@ Future<AppDependencies> bootstrapApp() async {
     personRepository: personRepository,
     expenseRepository: expenseRepository,
     billRepository: billRepository,
+    shoppingRepository: shoppingRepository,
     backupService: backupService,
     fileBackupGateway: FileBackupGateway(),
   );

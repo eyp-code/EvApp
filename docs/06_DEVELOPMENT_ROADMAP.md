@@ -1,5 +1,43 @@
 # 06 - Development Roadmap
 
+## Guncel Devam Notu - 2026-07-05
+
+Tamamlanan calisan kapsam:
+
+- Phase 1: Temel Flutter iskeleti.
+- Phase 2: Hive local storage temeli.
+- Phase 3: Person / roommate sistemi.
+- Phase 4: Expense MVP.
+- Phase 5: Borc/alacak olmadan pay hesabi ve dashboard ozeti.
+- Phase 6: Bill System MVP.
+- Phase 12'nin temel JSON backup / restore parcasi.
+
+Guncel backup kapsami:
+
+- JSON backup disa aktar calisiyor.
+- JSON backup ice aktar calisiyor.
+- Import `Replace All` kullaniyor.
+- Import oncesi kullanici uyarisi var.
+- Otomatik on-yedek simdilik ertelendi.
+
+Guncel test durumu:
+
+- `dart format lib test` basarili.
+- `flutter analyze` basarili.
+- `flutter test` basarili.
+- 24 test geciyor.
+
+Siradaki onerilen phase:
+
+1. Phase 10 Shopping List MVP'ye gec.
+2. `ShoppingItem` modeli ve `shopping_items_box` ekle.
+3. Repository / datasource katmanini kur.
+4. Liste ekraninda urun ekleme, listeleme ve satin alindi isaretleme akisini yaz.
+5. Backup hardening islerini sonraya birak:
+   - import oncesi otomatik on-yedek
+   - import/export sonrasi ozet mesaji
+   - daha siki JSON sema dogrulamasi
+
 ## Guncel Devam Notu - 2026-07-03
 
 Tamamlanan calisan kapsam:

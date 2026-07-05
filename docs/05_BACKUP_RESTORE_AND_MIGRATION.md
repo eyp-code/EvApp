@@ -1,5 +1,25 @@
 # 05 - Backup, Restore and Migration
 
+## Guncel Karar Notu - 2026-07-05
+
+JSON backup / restore temel akisi artik calisiyor.
+
+Mevcut aktif kapsam:
+
+- `Yedek disari aktar`
+- `Yedek ice aktar`
+- JSON parse/validate
+- `Replace All` import davranisi
+- import oncesi kullanici uyarisi
+
+Simdilik ertelenen kisim:
+
+- import oncesi otomatik on-yedek
+
+Bu karar urun sahibi tarafindan alindi. Yani backup tamamen rafa kalkmadi; temel surum var, sadece hardening adimi sonraya birakildi.
+
+Bu dosyada gecen otomatik on-yedek adimlari sonraki iyilestirme backlog'u olarak okunmali, mevcut aktif davranis olarak degil.
+
 ## Guncel Uygulama Plani - 2026-07-03
 
 Siradaki gelistirme adimi bu dosyadaki JSON backup / restore kapsamidir.

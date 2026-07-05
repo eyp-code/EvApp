@@ -12,6 +12,8 @@ import '../../expenses/domain/models/expense.dart';
 import '../../expenses/presentation/pages/expenses_page.dart';
 import '../../people/domain/models/person.dart';
 import '../../settings/presentation/pages/settings_page.dart';
+import '../../shopping/domain/models/shopping_item.dart';
+import '../../shopping/domain/repositories/shopping_repository.dart';
 import '../../shopping/presentation/pages/shopping_page.dart';
 import '../../tasks/presentation/pages/tasks_page.dart';
 
@@ -54,7 +56,12 @@ class _MainShellState extends State<MainShell> {
         expenseRepository: widget.dependencies.expenseRepository,
         personRepository: widget.dependencies.personRepository,
       ),
-      const ShoppingPage(key: ValueKey('shopping')),
+      ShoppingPage(
+        key: ValueKey('shopping-$_dataRevision'),
+        shoppingRepository:
+            widget.dependencies.shoppingRepository ??
+            _EmptyShoppingRepository(),
+      ),
       const TasksPage(key: ValueKey('tasks')),
       SettingsPage(
         key: ValueKey('settings-$_dataRevision'),
@@ -131,4 +138,18 @@ class _EmptyBackupStore implements BackupStore {
 
   @override
   Future<void> replaceAll(BackupDataBundle bundle) async {}
+}
+
+class _EmptyShoppingRepository implements ShoppingRepository {
+  @override
+  Future<void> addShoppingItem(ShoppingItem item) async {}
+
+  @override
+  Future<void> deleteShoppingItem(String itemId) async {}
+
+  @override
+  Future<List<ShoppingItem>> getShoppingItems() async => const [];
+
+  @override
+  Future<void> togglePurchased(String itemId) async {}
 }

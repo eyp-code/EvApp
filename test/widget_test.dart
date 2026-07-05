@@ -12,6 +12,8 @@ import 'package:ev_masraflari_app/features/expenses/domain/models/split_type.dar
 import 'package:ev_masraflari_app/features/expenses/domain/repositories/expense_repository.dart';
 import 'package:ev_masraflari_app/features/people/domain/models/person.dart';
 import 'package:ev_masraflari_app/features/people/domain/repositories/person_repository.dart';
+import 'package:ev_masraflari_app/features/shopping/domain/models/shopping_item.dart';
+import 'package:ev_masraflari_app/features/shopping/domain/repositories/shopping_repository.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
@@ -1000,6 +1002,96 @@ void main() {
       throwsFormatException,
     );
   });
+
+  testWidgets('Shopping page adds an item', (WidgetTester tester) async {
+    final shoppingRepository = _FakeShoppingRepository();
+
+    await tester.pumpWidget(
+      EvApp(
+        dependencies: AppDependencies(
+          personRepository: _FakePersonRepository(),
+          expenseRepository: _FakeExpenseRepository(),
+          billRepository: _FakeBillRepository(),
+          shoppingRepository: shoppingRepository,
+        ),
+      ),
+    );
+    await tester.pump();
+
+    await tester.tap(find.text('Liste'));
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.byTooltip('Ürün ekle'));
+    await tester.pumpAndSettle();
+
+    await tester.enterText(find.widgetWithText(TextField, 'Ürün adı'), 'Süt');
+    await tester.enterText(
+      find.widgetWithText(TextField, 'Tahmini fiyat'),
+      '85',
+    );
+    await tester.tap(find.text('Kaydet'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Süt'), findsOneWidget);
+    expect(find.text('Market • 85.00 TL'), findsOneWidget);
+  });
+
+  testWidgets('Shopping page toggles purchased state', (
+    WidgetTester tester,
+  ) async {
+    final shoppingRepository = _FakeShoppingRepository();
+    await shoppingRepository.addShoppingItem(
+      ShoppingItem.create(name: 'Deterjan', category: 'Temizlik'),
+    );
+
+    await tester.pumpWidget(
+      EvApp(
+        dependencies: AppDependencies(
+          personRepository: _FakePersonRepository(),
+          expenseRepository: _FakeExpenseRepository(),
+          billRepository: _FakeBillRepository(),
+          shoppingRepository: shoppingRepository,
+        ),
+      ),
+    );
+    await tester.pump();
+
+    await tester.tap(find.text('Liste'));
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.byType(Checkbox));
+    await tester.pumpAndSettle();
+
+    expect((await shoppingRepository.getShoppingItems()).single.isPurchased, isTrue);
+  });
+
+  testWidgets('Shopping page deletes an item', (WidgetTester tester) async {
+    final shoppingRepository = _FakeShoppingRepository();
+    await shoppingRepository.addShoppingItem(
+      ShoppingItem.create(name: 'Peçete', category: 'Market'),
+    );
+
+    await tester.pumpWidget(
+      EvApp(
+        dependencies: AppDependencies(
+          personRepository: _FakePersonRepository(),
+          expenseRepository: _FakeExpenseRepository(),
+          billRepository: _FakeBillRepository(),
+          shoppingRepository: shoppingRepository,
+        ),
+      ),
+    );
+    await tester.pump();
+
+    await tester.tap(find.text('Liste'));
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.byTooltip('Ürünü sil'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Peçete'), findsNothing);
+  });
+
 }
 
 class _FakePersonRepository implements PersonRepository {
@@ -1227,5 +1319,41 @@ class _FakeBackupStore implements BackupStore {
     _expenses = List<Expense>.from(bundle.expenses);
     _billTypes = List<BillType>.from(bundle.billTypes);
     _monthlyBills = List<MonthlyBill>.from(bundle.monthlyBills);
+  }
+}
+
+class _FakeShoppingRepository implements ShoppingRepository {
+  final List<ShoppingItem> _items = [];
+
+  @override
+  Future<void> addShoppingItem(ShoppingItem item) async {
+    _items.add(item);
+  }
+
+  @override
+  Future<void> deleteShoppingItem(String itemId) async {
+    final index = _items.indexWhere((item) => item.id == itemId);
+
+    if (index == -1) {
+      return;
+    }
+
+    _items[index] = _items[index].markedDeleted();
+  }
+
+  @override
+  Future<List<ShoppingItem>> getShoppingItems() async {
+    return _items.where((item) => !item.isDeleted).toList();
+  }
+
+  @override
+  Future<void> togglePurchased(String itemId) async {
+    final index = _items.indexWhere((item) => item.id == itemId);
+
+    if (index == -1) {
+      return;
+    }
+
+    _items[index] = _items[index].toggledPurchased();
   }
 }

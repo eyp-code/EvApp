@@ -3,7 +3,6 @@ import 'dart:io';
 import 'dart:typed_data';
 
 import 'package:file_picker/file_picker.dart';
-
 import 'file_backup_gateway.dart';
 
 class FileBackupGatewayImpl implements FileBackupGateway {
@@ -24,6 +23,11 @@ class FileBackupGatewayImpl implements FileBackupGateway {
 
     if (selectedPath == null) {
       throw FileSystemException('Kaydetme islemi iptal edildi.');
+    }
+
+    if (_isDirectFilePath(selectedPath)) {
+      final file = File(selectedPath);
+      await file.writeAsBytes(bytes, flush: true);
     }
 
     return selectedPath;
@@ -65,5 +69,19 @@ class FileBackupGatewayImpl implements FileBackupGateway {
     final minute = now.minute.toString().padLeft(2, '0');
 
     return '${prefix}_${year}_${month}_${day}_${hour}_$minute.json';
+  }
+
+  bool _isDirectFilePath(String path) {
+    if (path.isEmpty) {
+      return false;
+    }
+
+    final normalized = path.replaceAll('/', '\\');
+
+    final hasDriveLetter =
+        normalized.length > 2 && RegExp(r'^[a-zA-Z]:\\').hasMatch(normalized);
+    final isUncPath = normalized.startsWith(r'\\');
+
+    return hasDriveLetter || isUncPath;
   }
 }

@@ -1,5 +1,33 @@
 # EvApp AI Tracking
 
+## Guncel Karar - 2026-07-05
+
+JSON backup / restore temel akisi tamamlandi.
+
+Mevcut durum:
+
+- `Yedek disa aktar` calisiyor.
+- `Yedek ice aktar` calisiyor.
+- Import `Replace All` kullaniyor.
+- Import oncesi kullanici uyarisi gosteriliyor.
+- Backup icin export/import, invalid payload, replace-all ve soft delete testleri var.
+
+Urun sahibi karariyla simdilik eklenmeyen kisim:
+
+- import oncesi otomatik on-yedek
+
+Bu nedenle backup hardening backlog'a alindi.
+
+Yeni siradaki adim:
+
+- Shopping List MVP
+  - `ShoppingItem` modeli
+  - Hive box
+  - repository / datasource
+  - urun ekleme
+  - listeleme
+  - satin alindi isaretleme
+
 ## Commit Kurali
 
 - AI asla `git commit` calistirmaz.

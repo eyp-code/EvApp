@@ -5,4 +5,5 @@ class HiveBoxNames {
   static const expenses = 'expenses_box';
   static const billTypes = 'bill_types_box';
   static const monthlyBills = 'monthly_bills_box';
+  static const shoppingItems = 'shopping_items_box';
 }
