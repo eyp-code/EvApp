@@ -451,7 +451,6 @@ Ev için alınacak ürünleri takip etmek.
 
 - Ürün adı
 - Kategori
-- Tahmini fiyat
 - Öncelik
 - Not
 - Alındı mı?

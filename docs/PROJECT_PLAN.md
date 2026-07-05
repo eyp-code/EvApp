@@ -192,7 +192,6 @@ eklenebilir.
 
 - Ürün ekleme
 - Kategori seçme
-- Tahmini fiyat
 - Öncelik
 - Alındı işaretleme
 

@@ -257,7 +257,6 @@ Kullanıcı ev için alınacakları ekler:
 
 - Ürün adı
 - Kategori
-- Tahmini fiyat
 - Öncelik
 - Alındı / alınmadı durumu
 

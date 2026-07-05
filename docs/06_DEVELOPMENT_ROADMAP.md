@@ -25,15 +25,14 @@ Guncel test durumu:
 - `dart format lib test` basarili.
 - `flutter analyze` basarili.
 - `flutter test` basarili.
-- 24 test geciyor.
+- 29 test geciyor.
 
 Siradaki onerilen phase:
 
-1. Phase 10 Shopping List MVP'ye gec.
-2. `ShoppingItem` modeli ve `shopping_items_box` ekle.
-3. Repository / datasource katmanini kur.
-4. Liste ekraninda urun ekleme, listeleme ve satin alindi isaretleme akisini yaz.
-5. Backup hardening islerini sonraya birak:
+1. Phase 10 Shopping List icinde ikinci adima gec.
+2. Durum/kategori filtresi ve urun duzenleme akisini ekle.
+3. Sonra Phase 11 Household Tasks MVP'ye gec.
+4. Backup hardening islerini sonraya birak:
    - import oncesi otomatik on-yedek
    - import/export sonrasi ozet mesaji
    - daha siki JSON sema dogrulamasi
@@ -367,7 +366,6 @@ Ev için alınacakları takip etmek.
 - Ürün listeleme
 - Alındı işaretleme
 - Öncelik sistemi
-- Tahmini fiyat
 
 ## Tamamlanma Kriteri
 

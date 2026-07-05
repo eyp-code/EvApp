@@ -1021,19 +1021,15 @@ void main() {
     await tester.tap(find.text('Liste'));
     await tester.pumpAndSettle();
 
-    await tester.tap(find.byTooltip('Ürün ekle'));
+    await tester.tap(find.byTooltip('Urun ekle'));
     await tester.pumpAndSettle();
 
-    await tester.enterText(find.widgetWithText(TextField, 'Ürün adı'), 'Süt');
-    await tester.enterText(
-      find.widgetWithText(TextField, 'Tahmini fiyat'),
-      '85',
-    );
+    await tester.enterText(find.widgetWithText(TextField, 'Urun adi'), 'Sut');
     await tester.tap(find.text('Kaydet'));
     await tester.pumpAndSettle();
 
-    expect(find.text('Süt'), findsOneWidget);
-    expect(find.text('Market • 85.00 TL'), findsOneWidget);
+    expect(find.text('Sut'), findsOneWidget);
+    expect(find.text('Market'), findsOneWidget);
   });
 
   testWidgets('Shopping page toggles purchased state', (
@@ -1086,12 +1082,87 @@ void main() {
     await tester.tap(find.text('Liste'));
     await tester.pumpAndSettle();
 
-    await tester.tap(find.byTooltip('Ürünü sil'));
+    await tester.tap(find.byTooltip('Urunu sil'));
     await tester.pumpAndSettle();
 
     expect(find.text('Peçete'), findsNothing);
   });
 
+  testWidgets('Shopping page shows summary metrics', (
+    WidgetTester tester,
+  ) async {
+    final shoppingRepository = _FakeShoppingRepository();
+    await shoppingRepository.addShoppingItem(
+      ShoppingItem.create(name: 'Sut', category: 'Market'),
+    );
+    await shoppingRepository.addShoppingItem(
+      ShoppingItem.create(name: 'Deterjan', category: 'Temizlik'),
+    );
+    final secondItem = (await shoppingRepository.getShoppingItems()).last;
+    await shoppingRepository.togglePurchased(secondItem.id);
+
+    await tester.pumpWidget(
+      EvApp(
+        dependencies: AppDependencies(
+          personRepository: _FakePersonRepository(),
+          expenseRepository: _FakeExpenseRepository(),
+          billRepository: _FakeBillRepository(),
+          shoppingRepository: shoppingRepository,
+        ),
+      ),
+    );
+    await tester.pump();
+
+    await tester.tap(find.text('Liste'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Toplam urun'), findsOneWidget);
+    expect(find.text('Alinacak'), findsWidgets);
+    expect(find.text('Alindi'), findsWidgets);
+    expect(find.text('Durum'), findsOneWidget);
+    expect(find.text('Bekliyor'), findsOneWidget);
+  });
+
+  testWidgets('Shopping page filters purchased and pending items', (
+    WidgetTester tester,
+  ) async {
+    final shoppingRepository = _FakeShoppingRepository();
+    await shoppingRepository.addShoppingItem(
+      ShoppingItem.create(name: 'Sut', category: 'Market'),
+    );
+    await shoppingRepository.addShoppingItem(
+      ShoppingItem.create(name: 'Cop Torbasi', category: 'Temizlik'),
+    );
+    final secondItem = (await shoppingRepository.getShoppingItems()).last;
+    await shoppingRepository.togglePurchased(secondItem.id);
+
+    await tester.pumpWidget(
+      EvApp(
+        dependencies: AppDependencies(
+          personRepository: _FakePersonRepository(),
+          expenseRepository: _FakeExpenseRepository(),
+          billRepository: _FakeBillRepository(),
+          shoppingRepository: shoppingRepository,
+        ),
+      ),
+    );
+    await tester.pump();
+
+    await tester.tap(find.text('Liste'));
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.text('Alinacak').last);
+    await tester.pumpAndSettle();
+
+    expect(find.text('Sut'), findsOneWidget);
+    expect(find.text('Cop Torbasi'), findsNothing);
+
+    await tester.tap(find.text('Alindi').last);
+    await tester.pumpAndSettle();
+
+    expect(find.text('Sut'), findsNothing);
+    expect(find.text('Cop Torbasi'), findsOneWidget);
+  });
 }
 
 class _FakePersonRepository implements PersonRepository {
