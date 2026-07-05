@@ -24,6 +24,16 @@ class BillLocalDataSource {
     return billTypes;
   }
 
+  Future<List<BillType>> getAllBillTypes() async {
+    final billTypes = _billTypesBox.values
+        .map((value) => BillType.fromJson(Map<String, dynamic>.from(value)))
+        .toList();
+
+    billTypes.sort((first, second) => first.name.compareTo(second.name));
+
+    return billTypes;
+  }
+
   Future<void> saveBillType(BillType billType) async {
     await _billTypesBox.put(billType.id, billType.toJson());
   }
@@ -83,5 +93,21 @@ class BillLocalDataSource {
 
   Future<void> saveMonthlyBill(MonthlyBill monthlyBill) async {
     await _monthlyBillsBox.put(monthlyBill.id, monthlyBill.toJson());
+  }
+
+  Future<void> replaceAll({
+    required List<BillType> billTypes,
+    required List<MonthlyBill> monthlyBills,
+  }) async {
+    await _billTypesBox.clear();
+    await _monthlyBillsBox.clear();
+
+    for (final billType in billTypes) {
+      await saveBillType(billType);
+    }
+
+    for (final monthlyBill in monthlyBills) {
+      await saveMonthlyBill(monthlyBill);
+    }
   }
 }

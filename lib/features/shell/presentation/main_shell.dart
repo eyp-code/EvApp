@@ -1,9 +1,16 @@
 import 'package:flutter/material.dart';
 
 import '../../../../bootstrap.dart';
+import '../../../../core/backup/backup_data_bundle.dart';
+import '../../../../core/backup/backup_service.dart';
+import '../../../../core/backup/file_backup_gateway.dart';
+import '../../bills/domain/models/bill_type.dart';
+import '../../bills/domain/models/monthly_bill.dart';
 import '../../bills/presentation/pages/bills_page.dart';
 import '../../dashboard/presentation/pages/dashboard_page.dart';
+import '../../expenses/domain/models/expense.dart';
 import '../../expenses/presentation/pages/expenses_page.dart';
+import '../../people/domain/models/person.dart';
 import '../../settings/presentation/pages/settings_page.dart';
 import '../../shopping/presentation/pages/shopping_page.dart';
 import '../../tasks/presentation/pages/tasks_page.dart';
@@ -19,26 +26,46 @@ class MainShell extends StatefulWidget {
 
 class _MainShellState extends State<MainShell> {
   int _selectedIndex = 0;
+  int _dataRevision = 0;
+
+  void _handleDataImported() {
+    setState(() {
+      _dataRevision++;
+      _selectedIndex = 0;
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
     final pages = [
       DashboardPage(
+        key: ValueKey('dashboard-$_dataRevision'),
         personRepository: widget.dependencies.personRepository,
         expenseRepository: widget.dependencies.expenseRepository,
       ),
       ExpensesPage(
+        key: ValueKey('expenses-$_dataRevision'),
         personRepository: widget.dependencies.personRepository,
         expenseRepository: widget.dependencies.expenseRepository,
       ),
       BillsPage(
+        key: ValueKey('bills-$_dataRevision'),
         billRepository: widget.dependencies.billRepository,
         expenseRepository: widget.dependencies.expenseRepository,
         personRepository: widget.dependencies.personRepository,
       ),
-      const ShoppingPage(),
-      const TasksPage(),
-      SettingsPage(personRepository: widget.dependencies.personRepository),
+      const ShoppingPage(key: ValueKey('shopping')),
+      const TasksPage(key: ValueKey('tasks')),
+      SettingsPage(
+        key: ValueKey('settings-$_dataRevision'),
+        personRepository: widget.dependencies.personRepository,
+        backupService:
+            widget.dependencies.backupService ??
+            BackupService(_EmptyBackupStore()),
+        fileBackupGateway:
+            widget.dependencies.fileBackupGateway ?? FileBackupGateway(),
+        onDataImported: _handleDataImported,
+      ),
     ];
 
     return Scaffold(
@@ -87,4 +114,21 @@ class _MainShellState extends State<MainShell> {
       ),
     );
   }
+}
+
+class _EmptyBackupStore implements BackupStore {
+  @override
+  Future<List<BillType>> getAllBillTypes() async => const [];
+
+  @override
+  Future<List<Expense>> getAllExpenses() async => const [];
+
+  @override
+  Future<List<MonthlyBill>> getAllMonthlyBills() async => const [];
+
+  @override
+  Future<List<Person>> getAllPersons() async => const [];
+
+  @override
+  Future<void> replaceAll(BackupDataBundle bundle) async {}
 }

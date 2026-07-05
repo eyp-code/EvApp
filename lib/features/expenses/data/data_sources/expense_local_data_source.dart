@@ -18,6 +18,16 @@ class ExpenseLocalDataSource {
     return expenses;
   }
 
+  Future<List<Expense>> getAllExpenses() async {
+    final expenses = _box.values
+        .map((value) => Expense.fromJson(Map<String, dynamic>.from(value)))
+        .toList();
+
+    expenses.sort((first, second) => second.spentAt.compareTo(first.spentAt));
+
+    return expenses;
+  }
+
   Future<Expense?> getExpenseById(String id) async {
     final value = _box.get(id);
 
@@ -30,5 +40,13 @@ class ExpenseLocalDataSource {
 
   Future<void> saveExpense(Expense expense) async {
     await _box.put(expense.id, expense.toJson());
+  }
+
+  Future<void> replaceAll(List<Expense> expenses) async {
+    await _box.clear();
+
+    for (final expense in expenses) {
+      await _box.put(expense.id, expense.toJson());
+    }
   }
 }

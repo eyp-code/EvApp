@@ -1,13 +1,24 @@
 import 'package:flutter/material.dart';
 
+import '../../../../core/backup/backup_service.dart';
+import '../../../../core/backup/file_backup_gateway.dart';
 import '../../../../shared/widgets/section_placeholder.dart';
 import '../../../people/domain/models/person.dart';
 import '../../../people/domain/repositories/person_repository.dart';
 
 class SettingsPage extends StatefulWidget {
-  const SettingsPage({super.key, required this.personRepository});
+  const SettingsPage({
+    super.key,
+    required this.personRepository,
+    required this.backupService,
+    required this.fileBackupGateway,
+    required this.onDataImported,
+  });
 
   final PersonRepository personRepository;
+  final BackupService backupService;
+  final FileBackupGateway fileBackupGateway;
+  final VoidCallback onDataImported;
 
   @override
   State<SettingsPage> createState() => _SettingsPageState();
@@ -65,6 +76,82 @@ class _SettingsPageState extends State<SettingsPage> {
     await _refreshPersons();
   }
 
+  Future<void> _exportBackup() async {
+    try {
+      final json = await widget.backupService.exportBackupJson();
+      final path = await widget.fileBackupGateway.exportJson(json);
+
+      if (!mounted) {
+        return;
+      }
+
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text('Yedek oluşturuldu: $path')));
+    } catch (error) {
+      if (!mounted) {
+        return;
+      }
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Yedek dışa aktarma başarısız: $error')),
+      );
+    }
+  }
+
+  Future<void> _importBackup() async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Yedek içe aktar'),
+        content: const Text(
+          'Bu işlem mevcut verileri seçilen yedekle değiştirecek. Devam etmek istiyor musun?',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(false),
+            child: const Text('Vazgeç'),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.of(context).pop(true),
+            child: const Text('Devam et'),
+          ),
+        ],
+      ),
+    );
+
+    if (confirmed != true) {
+      return;
+    }
+
+    try {
+      final json = await widget.fileBackupGateway.pickBackupJson();
+      if (json == null) {
+        return;
+      }
+
+      await widget.backupService.importBackupJson(json);
+      await _refreshPersons();
+      widget.onDataImported();
+
+      if (!mounted) {
+        return;
+      }
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Yedek başarıyla içe aktarıldı.')),
+      );
+    } catch (error) {
+      if (!mounted) {
+        return;
+      }
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Yedek içe aktarma başarısız: $error')),
+      );
+    }
+  }
+
   Future<String?> _showPersonNameDialog({
     required String title,
     String initialName = '',
@@ -90,7 +177,7 @@ class _SettingsPageState extends State<SettingsPage> {
         const _PageHeader(
           title: 'Ayarlar',
           subtitle:
-              'Evdeki kişiler, bildirimler ve yedekleme burada yönetilecek.',
+              'Kişiler, yedekleme ve uygulama tercihleri burada yönetilir.',
         ),
         const SizedBox(height: 20),
         FutureBuilder<List<Person>>(
@@ -105,13 +192,77 @@ class _SettingsPageState extends State<SettingsPage> {
             );
           },
         ),
+        const SizedBox(height: 16),
+        _BackupSection(
+          onExportPressed: _exportBackup,
+          onImportPressed: _importBackup,
+        ),
         const SectionPlaceholder(
           title: 'Uygulama ayarları',
           description:
-              'JSON yedek alma, içe aktarma ve bildirim ayarları bu ekrana eklenecek.',
+              'Bildirimler ve diğer uygulama tercihleri bu ekrana eklenecek.',
           icon: Icons.settings_outlined,
         ),
       ],
+    );
+  }
+}
+
+class _BackupSection extends StatelessWidget {
+  const _BackupSection({
+    required this.onExportPressed,
+    required this.onImportPressed,
+  });
+
+  final VoidCallback onExportPressed;
+  final VoidCallback onImportPressed;
+
+  @override
+  Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+
+    return Card(
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              'Yedekleme',
+              style: Theme.of(
+                context,
+              ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w800),
+            ),
+            const SizedBox(height: 4),
+            Text(
+              'Verilerini JSON olarak dışa aktar veya mevcut yedeği geri yükle.',
+              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                color: colorScheme.onSurfaceVariant,
+              ),
+            ),
+            const SizedBox(height: 12),
+            Row(
+              children: [
+                Expanded(
+                  child: FilledButton.icon(
+                    onPressed: onExportPressed,
+                    icon: const Icon(Icons.ios_share_outlined),
+                    label: const Text('Dışa aktar'),
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: OutlinedButton.icon(
+                    onPressed: onImportPressed,
+                    icon: const Icon(Icons.download_outlined),
+                    label: const Text('İçe aktar'),
+                  ),
+                ),
+              ],
+            ),
+          ],
+        ),
+      ),
     );
   }
 }

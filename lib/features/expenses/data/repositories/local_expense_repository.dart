@@ -13,6 +13,11 @@ class LocalExpenseRepository implements ExpenseRepository {
   }
 
   @override
+  Future<List<Expense>> getAllExpenses() {
+    return _dataSource.getAllExpenses();
+  }
+
+  @override
   Future<void> deleteExpense(String expenseId) async {
     final expense = await _dataSource.getExpenseById(expenseId);
 
@@ -26,5 +31,9 @@ class LocalExpenseRepository implements ExpenseRepository {
   @override
   Future<List<Expense>> getExpenses() {
     return _dataSource.getExpenses();
+  }
+
+  Future<void> replaceAll(List<Expense> expenses) {
+    return _dataSource.replaceAll(expenses);
   }
 }

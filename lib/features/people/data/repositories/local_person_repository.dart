@@ -13,6 +13,11 @@ class LocalPersonRepository implements PersonRepository {
   }
 
   @override
+  Future<List<Person>> getAllPersons() {
+    return _dataSource.getAllPersons();
+  }
+
+  @override
   Future<Person?> getMe() async {
     final persons = await getPersons();
 
@@ -44,5 +49,9 @@ class LocalPersonRepository implements PersonRepository {
     }
 
     await _dataSource.savePerson(person.markedDeleted());
+  }
+
+  Future<void> replaceAll(List<Person> persons) {
+    return _dataSource.replaceAll(persons);
   }
 }

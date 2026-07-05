@@ -4,11 +4,15 @@ import '../models/monthly_bill.dart';
 abstract class BillRepository {
   Future<List<BillType>> getBillTypes();
 
+  Future<List<BillType>> getAllBillTypes();
+
   Future<void> addBillType(BillType billType);
 
   Future<void> deleteBillType(String billTypeId);
 
   Future<List<MonthlyBill>> getMonthlyBills();
+
+  Future<List<MonthlyBill>> getAllMonthlyBills();
 
   Future<void> addMonthlyBill(MonthlyBill monthlyBill);
 

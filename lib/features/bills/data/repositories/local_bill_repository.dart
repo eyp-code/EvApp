@@ -14,6 +14,11 @@ class LocalBillRepository implements BillRepository {
   }
 
   @override
+  Future<List<BillType>> getAllBillTypes() {
+    return _dataSource.getAllBillTypes();
+  }
+
+  @override
   Future<void> deleteBillType(String billTypeId) async {
     final billType = await _dataSource.getBillTypeById(billTypeId);
 
@@ -43,6 +48,11 @@ class LocalBillRepository implements BillRepository {
   @override
   Future<List<BillType>> getBillTypes() {
     return _dataSource.getBillTypes();
+  }
+
+  @override
+  Future<List<MonthlyBill>> getAllMonthlyBills() {
+    return _dataSource.getAllMonthlyBills();
   }
 
   @override
@@ -89,6 +99,16 @@ class LocalBillRepository implements BillRepository {
 
     await _dataSource.saveMonthlyBill(
       monthlyBill.markedPaid(generatedExpenseId: generatedExpenseId),
+    );
+  }
+
+  Future<void> replaceAll({
+    required List<BillType> billTypes,
+    required List<MonthlyBill> monthlyBills,
+  }) async {
+    await _dataSource.replaceAll(
+      billTypes: billTypes,
+      monthlyBills: monthlyBills,
     );
   }
 }

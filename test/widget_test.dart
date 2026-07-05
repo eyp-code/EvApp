@@ -1,5 +1,9 @@
+import 'dart:convert';
+
 import 'package:ev_masraflari_app/app/app.dart';
 import 'package:ev_masraflari_app/bootstrap.dart';
+import 'package:ev_masraflari_app/core/backup/backup_data_bundle.dart';
+import 'package:ev_masraflari_app/core/backup/backup_service.dart';
 import 'package:ev_masraflari_app/features/bills/domain/models/bill_type.dart';
 import 'package:ev_masraflari_app/features/bills/domain/models/monthly_bill.dart';
 import 'package:ev_masraflari_app/features/bills/domain/repositories/bill_repository.dart';
@@ -815,6 +819,187 @@ void main() {
     expect(find.text('850.00 TL'), findsOneWidget);
     expect(find.text('1350.00 TL'), findsOneWidget);
   });
+  test('BackupService exports expected sections and restores records', () async {
+    final store = _FakeBackupStore(
+      persons: [Person.createMe(name: 'Ben'), Person.createRoommate(name: 'Ayse')],
+      expenses: [
+        Expense.create(
+          title: 'Market',
+          category: 'Market',
+          totalAmount: 500,
+          spentAt: DateTime(2026, 7, 1),
+          paidByPersonId: 'p1',
+          splitType: SplitType.onlyMe,
+          participantIds: ['p1'],
+        ),
+      ],
+      billTypes: [BillType.create(name: 'Su')],
+      monthlyBills: [
+        MonthlyBill.create(
+          billTypeId: 'bill-1',
+          billTypeName: 'Su',
+          year: 2026,
+          month: 7,
+          amount: 250,
+        ),
+      ],
+    );
+    final service = BackupService(store);
+
+    final exported = await service.exportBackupJson();
+    final exportedMap = jsonDecode(exported) as Map<String, dynamic>;
+
+    expect(exportedMap['appName'], 'EvApp');
+    expect(exportedMap['backupVersion'], 1);
+    expect(exportedMap['persons'], hasLength(2));
+    expect(exportedMap['expenses'], hasLength(1));
+    expect(exportedMap['billTypes'], hasLength(1));
+    expect(exportedMap['monthlyBills'], hasLength(1));
+
+    final emptyStore = _FakeBackupStore();
+    await BackupService(emptyStore).importBackupJson(exported);
+
+    expect(await emptyStore.getAllPersons(), hasLength(2));
+    expect(await emptyStore.getAllExpenses(), hasLength(1));
+    expect(await emptyStore.getAllBillTypes(), hasLength(1));
+    expect(await emptyStore.getAllMonthlyBills(), hasLength(1));
+  });
+
+  test('BackupService rejects invalid backupVersion', () async {
+    final service = BackupService(_FakeBackupStore());
+
+    await expectLater(
+      () => service.importBackupJson(
+        jsonEncode({
+          'appName': 'EvApp',
+          'backupVersion': 999,
+          'createdAt': DateTime.now().toIso8601String(),
+          'persons': [],
+          'expenses': [],
+          'billTypes': [],
+          'monthlyBills': [],
+        }),
+      ),
+      throwsFormatException,
+    );
+  });
+
+  test('BackupService import uses replace-all strategy', () async {
+    final service = BackupService(_FakeBackupStore());
+    final existingStore = _FakeBackupStore(
+      persons: [Person.createMe(name: 'Eski Ben')],
+      expenses: [
+        Expense.create(
+          title: 'Eski Masraf',
+          category: 'Test',
+          totalAmount: 999,
+          spentAt: DateTime(2026, 1, 1),
+          paidByPersonId: 'old-person',
+          splitType: SplitType.onlyMe,
+          participantIds: ['old-person'],
+        ),
+      ],
+      billTypes: [BillType.create(name: 'Eski Fatura')],
+      monthlyBills: [
+        MonthlyBill.create(
+          billTypeId: 'old-bill',
+          billTypeName: 'Eski Fatura',
+          year: 2026,
+          month: 1,
+          amount: 999,
+        ),
+      ],
+    );
+
+    final exported = await service.exportBackupJson();
+    await BackupService(existingStore).importBackupJson(exported);
+
+    expect(
+      (await existingStore.getAllPersons()).map((person) => person.name),
+      isNot(contains('Eski Ben')),
+    );
+    expect(
+      (await existingStore.getAllExpenses()).map((expense) => expense.title),
+      isEmpty,
+    );
+    expect(
+      (await existingStore.getAllBillTypes()).map((billType) => billType.name),
+      isEmpty,
+    );
+    expect(await existingStore.getAllMonthlyBills(), isEmpty);
+  });
+
+  test('BackupService preserves soft-deleted records in export/import', () async {
+    final deletedPerson = Person.createRoommate(name: 'Silinen').markedDeleted();
+    final deletedExpense = Expense.create(
+      title: 'Silinen Masraf',
+      category: 'Test',
+      totalAmount: 100,
+      spentAt: DateTime(2026, 7, 2),
+      paidByPersonId: 'deleted-person',
+      splitType: SplitType.onlyMe,
+      participantIds: ['deleted-person'],
+    ).markedDeleted();
+    final deletedBillType = BillType.create(name: 'Silinen Fatura')
+        .markedDeleted();
+    final deletedMonthlyBill = MonthlyBill.create(
+      billTypeId: deletedBillType.id,
+      billTypeName: deletedBillType.name,
+      year: 2026,
+      month: 7,
+      amount: 300,
+    ).markedDeleted();
+
+    final store = _FakeBackupStore(
+      persons: [Person.createMe(name: 'Ben'), deletedPerson],
+      expenses: [deletedExpense],
+      billTypes: [deletedBillType],
+      monthlyBills: [deletedMonthlyBill],
+    );
+
+    final exported = await BackupService(store).exportBackupJson();
+    final importedStore = _FakeBackupStore();
+    await BackupService(importedStore).importBackupJson(exported);
+
+    expect(
+      (await importedStore.getAllPersons()).where((person) => person.isDeleted),
+      hasLength(1),
+    );
+    expect(
+      (await importedStore.getAllExpenses())
+          .where((expense) => expense.isDeleted),
+      hasLength(1),
+    );
+    expect(
+      (await importedStore.getAllBillTypes())
+          .where((billType) => billType.isDeleted),
+      hasLength(1),
+    );
+    expect(
+      (await importedStore.getAllMonthlyBills())
+          .where((monthlyBill) => monthlyBill.isDeleted),
+      hasLength(1),
+    );
+  });
+
+  test('BackupService rejects invalid appName', () async {
+    final service = BackupService(_FakeBackupStore());
+
+    await expectLater(
+      () => service.importBackupJson(
+        jsonEncode({
+          'appName': 'WrongApp',
+          'backupVersion': 1,
+          'createdAt': DateTime.now().toIso8601String(),
+          'persons': [],
+          'expenses': [],
+          'billTypes': [],
+          'monthlyBills': [],
+        }),
+      ),
+      throwsFormatException,
+    );
+  });
 }
 
 class _FakePersonRepository implements PersonRepository {
@@ -847,6 +1032,11 @@ class _FakePersonRepository implements PersonRepository {
   @override
   Future<Person?> getMe() async {
     return _persons.where((person) => person.isMe && !person.isDeleted).first;
+  }
+
+  @override
+  Future<List<Person>> getAllPersons() async {
+    return List<Person>.from(_persons);
   }
 
   @override
@@ -888,6 +1078,11 @@ class _FakeExpenseRepository implements ExpenseRepository {
   @override
   Future<List<Expense>> getExpenses() async {
     return _expenses.where((expense) => !expense.isDeleted).toList();
+  }
+
+  @override
+  Future<List<Expense>> getAllExpenses() async {
+    return List<Expense>.from(_expenses);
   }
 }
 
@@ -937,10 +1132,20 @@ class _FakeBillRepository implements BillRepository {
   }
 
   @override
+  Future<List<BillType>> getAllBillTypes() async {
+    return List<BillType>.from(_billTypes);
+  }
+
+  @override
   Future<List<MonthlyBill>> getMonthlyBills() async {
     return _monthlyBills
         .where((monthlyBill) => !monthlyBill.isDeleted)
         .toList();
+  }
+
+  @override
+  Future<List<MonthlyBill>> getAllMonthlyBills() async {
+    return List<MonthlyBill>.from(_monthlyBills);
   }
 
   @override
@@ -984,5 +1189,43 @@ class _FakeBillRepository implements BillRepository {
     _monthlyBills[index] = _monthlyBills[index].markedPaid(
       generatedExpenseId: generatedExpenseId,
     );
+  }
+}
+
+class _FakeBackupStore implements BackupStore {
+  _FakeBackupStore({
+    List<Person>? persons,
+    List<Expense>? expenses,
+    List<BillType>? billTypes,
+    List<MonthlyBill>? monthlyBills,
+  }) : _persons = persons ?? [],
+       _expenses = expenses ?? [],
+       _billTypes = billTypes ?? [],
+       _monthlyBills = monthlyBills ?? [];
+
+  List<Person> _persons;
+  List<Expense> _expenses;
+  List<BillType> _billTypes;
+  List<MonthlyBill> _monthlyBills;
+
+  @override
+  Future<List<BillType>> getAllBillTypes() async => List<BillType>.from(_billTypes);
+
+  @override
+  Future<List<Expense>> getAllExpenses() async => List<Expense>.from(_expenses);
+
+  @override
+  Future<List<MonthlyBill>> getAllMonthlyBills() async =>
+      List<MonthlyBill>.from(_monthlyBills);
+
+  @override
+  Future<List<Person>> getAllPersons() async => List<Person>.from(_persons);
+
+  @override
+  Future<void> replaceAll(BackupDataBundle bundle) async {
+    _persons = List<Person>.from(bundle.persons);
+    _expenses = List<Expense>.from(bundle.expenses);
+    _billTypes = List<BillType>.from(bundle.billTypes);
+    _monthlyBills = List<MonthlyBill>.from(bundle.monthlyBills);
   }
 }
