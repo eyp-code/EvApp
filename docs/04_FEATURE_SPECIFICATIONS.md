@@ -1,6 +1,6 @@
 # 04 - Feature Specifications
 
-## Guncel Uygulanan Davranis - 2026-07-03
+## Guncel Uygulanan Davranis - 2026-07-05
 
 Masraf ve fatura sistemi icin bugunku calisan kararlar:
 
@@ -18,6 +18,13 @@ Masraf ve fatura sistemi icin bugunku calisan kararlar:
 - Aylik fatura kaydi silinirse ona bagli otomatik masraf kaydi da silinir.
 - Fatura turu silinirse eski odenmis aylik kayitlar korunur.
 - Silinen tekrarlayan aylik fatura ayni ay icinde tekrar otomatik uretilmez.
+- Shopping listte fiyat akisi yoktur.
+- Shopping list sade urun listesi mantigiyla calisir.
+- Shopping listte aktif davranislar:
+  - urun ekleme
+  - alinacak / alindi filtreleme
+  - alindi isaretleme
+  - urun silme
 
 Guncel fatura durumlari:
 
@@ -30,20 +37,15 @@ overdue: Gecikti
 
 Siradaki ozellik:
 
-- JSON backup / restore.
+- Shopping list icin urun duzenleme.
+- Sonra kategori filtresi.
 
-Beklenen kullanici akisi:
+Beklenen yakin akisi:
 
 ```text
-Ayarlar -> Yedek disari aktar -> JSON dosyasi olusur
-Ayarlar -> Yedek ice aktar -> JSON secilir -> veriler geri yuklenir
+Alisveris -> Urunu ac -> ad/kategori guncelle -> kaydet
+Alisveris -> Kategori filtresi sec -> liste daralir
 ```
-
-Ilk surumda import davranisi:
-
-- Mevcut veriler yedekteki verilerle degistirilir.
-- Kullaniciya islem oncesi uyari gosterilir.
-- Gecersiz JSON veya eksik alan varsa import yapilmaz.
 
 Bu dosya EvApp özelliklerinin detaylı davranışlarını açıklar.
 

@@ -1,6 +1,6 @@
 # EvApp - Local First Project Plan
 
-## Guncel Proje Durumu - 2026-07-03
+## Guncel Proje Durumu - 2026-07-05
 
 Bu noktada calisan MVP parcasi:
 
@@ -17,6 +17,12 @@ Bu noktada calisan MVP parcasi:
 - Sabit tutarli kisisel fatura.
 - Aylik fatura silme ve bagli masrafi dashboard toplamindan dusme.
 - Fatura turu silinince eski odenmis aylik kayitlari koruma.
+- JSON backup disa aktarma / ice aktarma.
+- Shopping list sade akisi:
+  - urun ekleme
+  - alinacak / alindi filtreleme
+  - alindi isaretleme
+  - urun silme
 
 Guncel urun kararlari:
 
@@ -35,13 +41,14 @@ flutter analyze
 flutter test
 ```
 
-19 test basarili gecmistir.
+29 test basarili gecmistir.
 
 Siradaki onerilen adim:
 
-- JSON backup / restore altyapisina gecmek.
+- Shopping list icin urun duzenleme ve kategori filtresi.
+- Sonra Household Tasks MVP'ye gecmek.
 
-## Siradaki Gelistirme Sureci - JSON Backup / Restore
+## Tamamlanan Gelistirme Sureci - JSON Backup / Restore
 
 Amac:
 

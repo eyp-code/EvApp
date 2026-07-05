@@ -91,7 +91,7 @@ Detayli proje dokumanlari:
 Onerilen siradaki teknik adim:
 
 1. Shopping list icin kategori filtresi ve duzenleme akisini eklemek.
-2. Household Tasks MVP'ye gecmek.
+2. Sonra Household Tasks MVP'ye gecmek.
 3. Task modeli, repository ve temel gorev ekranini kurmak.
 
 Backup icin sonra ele alinacak hardening isleri:

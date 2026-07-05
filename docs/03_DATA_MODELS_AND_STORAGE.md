@@ -1,6 +1,6 @@
 # 03 - Data Models and Local Storage
 
-## Guncel Model Notu - 2026-07-03
+## Guncel Model Notu - 2026-07-05
 
 Kodda calisan masraf/fatura veri modeli su sekildedir:
 
@@ -19,6 +19,10 @@ Kodda calisan masraf/fatura veri modeli su sekildedir:
   - `billTypeName` snapshot alani sayesinde fatura turu silinse bile eski odenmis kayit adini korur.
   - `generatedExpenseId` ile odeme sirasinda uretilen masraf kaydina baglanir.
   - Aylik fatura silinirse bu bagli masraf kaydi da soft delete edilir.
+- `ShoppingItem`
+  - Urun adini, kategori bilgisini ve alinma durumunu tutar.
+  - Soft delete ile silinir.
+  - Liste ekraninda alinacak/alindi filtrelerine gore kullanilir.
 
 Aktif Hive box'lari:
 
@@ -27,14 +31,13 @@ persons_box
 expenses_box
 bill_types_box
 monthly_bills_box
+shopping_items_box
 ```
 
 Siradaki model/storage adimi:
 
-- Backup JSON formatini mevcut aktif box'lara gore netlestirmek.
-- `backupVersion` alanini zorunlu tutmak.
-- Export edilen her modelde `id`, `createdAt`, `updatedAt`, `isDeleted`, `deletedAt`, `syncStatus` alanlarini korumak.
-- Import sirasinda once mevcut box'lari temizleyip sonra JSON icindeki kayitlari ayni id'lerle geri yazmak.
+- `ShoppingItem` modeli icindeki artik kullanilmayan fiyat/oncelik alanlarini temizleme ihtiyacini yeniden degerlendirmek.
+- `HouseholdTask` modeli ve buna ait Hive box tasarimini eklemek.
 
 ## Genel Veri Yaklaşımı
 

@@ -1,6 +1,6 @@
 # 02 - Local First Architecture
 
-## Guncel Mimari Notu - 2026-07-03
+## Guncel Mimari Notu - 2026-07-05
 
 Mevcut calisan uygulama local-first kararina uygun ilerliyor:
 
@@ -8,12 +8,13 @@ Mevcut calisan uygulama local-first kararina uygun ilerliyor:
 - Veriler Hive box'larinda tutuluyor.
 - Person, expense, bill type ve monthly bill kayitlari soft delete alanlariyla saklaniyor.
 - Fatura odemeleri masraf repository'sine `Expense` olarak aktariliyor.
+- Shopping list de ayri repository ve Hive box uzerinden calisiyor.
 
 Siradaki mimari adim:
 
-- `BackupService` ile repository/data source katmanlarinin uzerinden JSON export/import akisi kurmak.
-- UI'nin yine Hive detayini bilmemesini saglamak.
-- Import islemi icin ilk surumde `Replace All` stratejisi kullanmak.
+- Shopping listte duzenleme akisini mevcut repository yapisini bozmadan eklemek.
+- Kategori filtresini presentation katmaninda tutup veri katmanini gereksiz buyutmemek.
+- Sonraki yeni modulu da ayni pattern ile `HouseholdTask` repository uzerinden kurmak.
 
 ## Mimari Kararı
 

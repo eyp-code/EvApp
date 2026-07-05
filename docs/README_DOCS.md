@@ -10,9 +10,18 @@ Bu versiyonun ana kararı:
 
 ---
 
-## Guncel Dokuman Durumu - 2026-07-03
+## Guncel Dokuman Durumu - 2026-07-05
 
-Masraf ve fatura MVP'si calisan noktaya geldi. Dokumanlarda bundan sonraki ana gelistirme hedefi JSON backup / restore olarak belirlenmistir.
+Dokumanlar mevcut calisan urun durumuna gore guncellendi:
+
+- Masraf ve fatura MVP'si aktif.
+- JSON backup / restore temel akisi aktif.
+- Shopping list sade MVP'si aktif:
+  - urun ekleme
+  - durum filtresi
+  - alindi isaretleme
+  - silme
+- Shopping listte fiyat akisi bilerek kaldirildi.
 
 Guncel okuma sirasi:
 
@@ -30,10 +39,9 @@ Commit kurali:
 
 Siradaki teknik hedef:
 
-- Backup JSON formatini netlestirmek.
-- `persons`, `expenses`, `billTypes`, `monthlyBills` verilerini export etmek.
-- Ayni verileri `Replace All` stratejisiyle import etmek.
-- Ayarlar ekranina yedek aksiyonlarini eklemek.
+- Shopping list icin urun duzenleme akisini eklemek.
+- Kategori filtresi eklemek.
+- Sonra Household Tasks MVP'ye gecmek.
 
 ## Dosyalar
 

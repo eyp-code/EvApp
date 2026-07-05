@@ -2,7 +2,7 @@
 
 ## Guncel Karar - 2026-07-05
 
-JSON backup / restore temel akisi tamamlandi.
+JSON backup / restore temel akisi tamamlandi ve shopping listin sade MVP parcasi da eklendi.
 
 Mevcut durum:
 
@@ -11,6 +11,12 @@ Mevcut durum:
 - Import `Replace All` kullaniyor.
 - Import oncesi kullanici uyarisi gosteriliyor.
 - Backup icin export/import, invalid payload, replace-all ve soft delete testleri var.
+- Shopping listte fiyat akisi kaldirildi.
+- Shopping listte aktif kalan davranislar:
+  - urun ekleme
+  - alinacak / alindi filtreleme
+  - alindi isaretleme
+  - urun silme
 
 Urun sahibi karariyla simdilik eklenmeyen kisim:
 
@@ -20,13 +26,9 @@ Bu nedenle backup hardening backlog'a alindi.
 
 Yeni siradaki adim:
 
-- Shopping List MVP
-  - `ShoppingItem` modeli
-  - Hive box
-  - repository / datasource
-  - urun ekleme
-  - listeleme
-  - satin alindi isaretleme
+- Shopping list icin urun duzenleme
+- Shopping list icin kategori filtresi
+- Sonra Household Tasks MVP
 
 ## Commit Kurali
 
@@ -79,7 +81,7 @@ Guncel durum:
 - Odendi isaretlenen faturalar otomatik masrafa donusuyor.
 - Aylik fatura silinirse bagli masraf da dashboard toplamindan dusuyor.
 - Fatura turu silinse bile eski odenmis aylik kayitlar korunuyor.
-- Son dogrulamada 19 test basarili.
+- O adimdaki son dogrulamada 19 test basariliydi.
 
 Siradaki adim:
 
@@ -843,7 +845,7 @@ Phase 1 ile başlamak:
 
 - `dart format lib test` basarili.
 - `flutter analyze` basarili, issue yok.
-- `flutter test` basarili, 19 test gecti.
+- `flutter test` basarili, o adimda 19 test gecti.
 
 ### 2026-07-03 - Fatura Odeme ve Aylik Liste Davranisi Duzeltildi
 

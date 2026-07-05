@@ -20,11 +20,11 @@ Bu karar urun sahibi tarafindan alindi. Yani backup tamamen rafa kalkmadi; temel
 
 Bu dosyada gecen otomatik on-yedek adimlari sonraki iyilestirme backlog'u olarak okunmali, mevcut aktif davranis olarak degil.
 
-## Guncel Uygulama Plani - 2026-07-03
+## Guncel Uygulama Plani - 2026-07-05
 
-Siradaki gelistirme adimi bu dosyadaki JSON backup / restore kapsamidir.
+Backup temel surumu tamamlandigi icin bu dosya artik aktif sonraki adim degil, tamamlanmis ve sonra sertlestirilecek alan olarak okunmalidir.
 
-Ilk implementasyon kapsami:
+Tamamlanan ilk implementasyon kapsami:
 
 - `BackupService`
 - Export JSON modeli
@@ -39,7 +39,7 @@ Ilk implementasyon kapsami:
   - Import fatura turlerini ve aylik faturalarini geri yukler.
   - Soft delete alanlari korunur.
 
-Ilk surumda export edilecek veri setleri:
+Aktif export veri setleri:
 
 ```text
 persons

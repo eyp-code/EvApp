@@ -1,8 +1,8 @@
 # 01 - Project Overview
 
-## Guncel Kapanis Notu - 2026-07-03
+## Guncel Kapanis Notu - 2026-07-05
 
-Bugun itibariyla masraf ve fatura MVP'si calisan noktaya geldi.
+Bugun itibariyla masraf, fatura, backup ve shopping listin sade MVP parcasi calisan noktaya geldi.
 
 Tamamlanan ana akislari:
 
@@ -15,12 +15,19 @@ Tamamlanan ana akislari:
 - Sabit tutarli fatura.
 - Fatura odendiginde otomatik masraf olusturma.
 - Aylik fatura silindiginde bagli masrafi da silme.
+- JSON backup disa aktarma / ice aktarma.
+- Shopping list:
+  - urun ekleme
+  - alinacak / alindi filtreleme
+  - alindi isaretleme
+  - urun silme
 
 Siradaki gelistirme hedefi:
 
-- JSON backup / restore.
+- Shopping list icin urun duzenleme ve kategori filtresi.
+- Sonra Household Tasks MVP.
 
-Bu adimdan sonra uygulama verileri disari aktarilip geri yuklenebilecek. Bu, local-first mimari icin yeni ozelliklerden once tamamlanmasi gereken guvenlik katmanidir.
+Bu siralama bilincli: shopping listte gunluk kullanim ergonomisini tamamlayip sonra yeni modula gecilecek.
 
 ## Proje Adı
 

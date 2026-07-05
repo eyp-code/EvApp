@@ -10,6 +10,7 @@ Tamamlanan calisan kapsam:
 - Phase 4: Expense MVP.
 - Phase 5: Borc/alacak olmadan pay hesabi ve dashboard ozeti.
 - Phase 6: Bill System MVP.
+- Phase 10 Shopping List sade MVP parcasi.
 - Phase 12'nin temel JSON backup / restore parcasi.
 
 Guncel backup kapsami:
@@ -30,7 +31,7 @@ Guncel test durumu:
 Siradaki onerilen phase:
 
 1. Phase 10 Shopping List icinde ikinci adima gec.
-2. Durum/kategori filtresi ve urun duzenleme akisini ekle.
+2. Urun duzenleme ve kategori filtresi ekle.
 3. Sonra Phase 11 Household Tasks MVP'ye gec.
 4. Backup hardening islerini sonraya birak:
    - import oncesi otomatik on-yedek
