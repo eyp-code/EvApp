@@ -41,7 +41,7 @@ Calisan temel akislari:
 
 ## Hesaplama Karari
 
-Uygulama borc/alacak veya net borc hesabi yapmaz.
+Uygulama settlement hesabi yapmaz.
 
 Ana metrik `Bana yazilan toplam`dir:
 
@@ -90,9 +90,9 @@ Detayli proje dokumanlari:
 
 Onerilen siradaki teknik adim:
 
-1. Shopping list icin kategori filtresi ve duzenleme akisini eklemek.
-2. Sonra Household Tasks MVP'ye gecmek.
-3. Task modeli, repository ve temel gorev ekranini kurmak.
+1. Dashboard icin biten ay ozet arsivini eklemek.
+2. Ay kartina tiklayinca acilan birlesik aylik rapor akisini kurmak.
+3. Sonra shopping list icin kategori filtresi ve duzenleme akisina donmek.
 
 Backup icin sonra ele alinacak hardening isleri:
 

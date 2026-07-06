@@ -8,7 +8,7 @@ Tamamlanan calisan kapsam:
 - Phase 2: Hive local storage temeli.
 - Phase 3: Person / roommate sistemi.
 - Phase 4: Expense MVP.
-- Phase 5: Borc/alacak olmadan pay hesabi ve dashboard ozeti.
+- Phase 5: Pay hesabi ve dashboard ozeti.
 - Phase 6: Bill System MVP.
 - Phase 10 Shopping List sade MVP parcasi.
 - Phase 12'nin temel JSON backup / restore parcasi.
@@ -30,10 +30,11 @@ Guncel test durumu:
 
 Siradaki onerilen phase:
 
-1. Phase 10 Shopping List icinde ikinci adima gec.
-2. Urun duzenleme ve kategori filtresi ekle.
-3. Sonra Phase 11 Household Tasks MVP'ye gec.
-4. Backup hardening islerini sonraya birak:
+1. Dashboard icin aylik ozet arsivi ekle.
+2. Biten ay kartina tiklaninca acilan aylik rapor akisini kur.
+3. Sonra shopping list urun duzenleme ve kategori filtresine gec.
+4. Household Tasks MVP'yi bunun ardina al.
+5. Backup hardening islerini sonraya birak:
    - import oncesi otomatik on-yedek
    - import/export sonrasi ozet mesaji
    - daha siki JSON sema dogrulamasi
@@ -46,7 +47,7 @@ Tamamlanan calisan kapsam:
 - Phase 2: Hive local storage temeli.
 - Phase 3: Person / roommate sistemi.
 - Phase 4: Expense MVP.
-- Phase 5: Borc/alacak olmadan pay hesabi ve dashboard ozeti.
+- Phase 5: Pay hesabi ve dashboard ozeti.
 - Phase 6: Bill System MVP.
 
 Guncel fatura kapsami:
@@ -89,7 +90,7 @@ Ana prensip:
 
 > Önce küçük ve çalışan parçalar yapılacak. Sonra özellikler büyütülecek.
 
-> Güncel ürün kararı: Masraf paylaşımı olacak, fakat borç/alacak takibi olmayacak. Roadmap içinde eski borç/net borç ifadeleri görülürse bunlar kapsam dışı kabul edilecek.
+> Güncel ürün kararı: Uygulama pay takibi yapar, settlement takibi yapmaz. Dashboard aktif ayı gösterir; biten aylar da ana sayfa altında arşiv raporları olarak birikir.
 
 ---
 
@@ -221,7 +222,7 @@ Kullanıcı market masrafı ekler, uygulama benim payımı hesaplar ve listede g
 
 ## Amaç
 
-Benim payım, toplam ev masrafı ve borç hesabını doğru yapmak.
+Benim payım, toplam ev masrafı ve dashboard özetini doğru yapmak.
 
 ## Yapılacaklar
 
@@ -229,8 +230,8 @@ Benim payım, toplam ev masrafı ve borç hesabını doğru yapmak.
 - My share hesaplama
 - House total hesaplama
 - Roommate share hesaplama
-- Debt hesaplama
-- Net debt hesaplama
+- Assigned-to-me total hesaplama
+- Current month dashboard summary hesaplama
 
 ## Senaryolar
 
@@ -248,7 +249,7 @@ Dashboard’da şu değerler doğru görünür:
 Toplam Ev Masrafı
 Benim Payım
 Kişisel Harcamam
-Net Borç
+Bana Yazılan Toplam
 ```
 
 ---
@@ -451,6 +452,8 @@ Aylık rapor ekranını geliştirmek.
 - Abonelik toplamları
 - Benim payım raporu
 - Ev toplamı raporu
+- Ana sayfada biriken ay kartları
+- Karttan açılan birleşik ay raporu
 
 İlk sürümde grafik zorunlu değildir.
 
@@ -499,7 +502,7 @@ Mutlak öncelik:
 
 ```text
 1. Masraf sistemi
-2. Paylaşım ve borç hesabı
+2. Paylaşım ve dashboard özeti
 3. Fatura sistemi
 4. Local kayıt
 5. Backup
@@ -518,9 +521,9 @@ Sonra:
 ---
 
 # Geliştirme Tavsiyesi
-> Güncel hesaplama kararı: `Benim payım` yalnızca ortak bölünen masraflardan kullanıcıya düşen tutardır. `Kişisel harcamam`, ortak pay + sadece bana ait masraflar toplamıdır. Borç/alacak ve net borç hesapları kapsam dışıdır.
-> Güncel Dashboard hesaplama dili: Ana takip metriği `Bana yazılan toplam`dır. Bu değer ortak masraflardaki benim payım + sadece bana ait masraflardan oluşur. `Ortak masraflar`, `Benim ortak payım`, `Sadece benim masraflarım` ve `Bu ay girilen toplam` ayrı gösterilir. Borç/alacak veya net borç hesabı yapılmaz.
-> Güncel Dashboard hesaplama dili: Ana takip metriği `Bana yazılan toplam`dır. Bu değer ortak masraflardaki benim payım + sadece bana ait masraflardan oluşur. `Ortak masraflar`, `Benim ortak payım`, `Sadece benim masraflarım` ve `Bu ay girilen toplam` ayrı gösterilir. Borç/alacak veya net borç hesabı yapılmaz.
+> Güncel hesaplama kararı: `Benim payım` yalnızca ortak bölünen masraflardan kullanıcıya düşen tutardır. `Kişisel harcamam`, ortak pay + sadece bana ait masraflar toplamıdır. Settlement hesapları kapsam dışıdır.
+> Güncel Dashboard hesaplama dili: Ana takip metriği `Bana yazılan toplam`dır. Bu değer ortak masraflardaki benim payım + sadece bana ait masraflardan oluşur. `Ortak masraflar`, `Benim ortak payım`, `Sadece benim masraflarım` ve `Bu ay girilen toplam` ayrı gösterilir. Settlement hesabı yapılmaz.
+> Güncel Dashboard hesaplama dili: Ana takip metriği `Bana yazılan toplam`dır. Bu değer ortak masraflardaki benim payım + sadece bana ait masraflardan oluşur. `Ortak masraflar`, `Benim ortak payım`, `Sadece benim masraflarım` ve `Bu ay girilen toplam` ayrı gösterilir. Settlement hesabı yapılmaz.
 ## Ara Sonrası Devam Notu - 2026-07-03
 
 Mevcut çalışan temel:
@@ -548,4 +551,4 @@ Ara sonrası önerilen sıra:
    - Masraf kartında tarih/kategori görünümü
 3. Sonra fatura sistemi MVP'ye geçilecek.
 
-Borç/alacak ve net borç hesabı kapsam dışı kalmaya devam edecek.
+Settlement hesabı kapsam dışı kalmaya devam edecek.

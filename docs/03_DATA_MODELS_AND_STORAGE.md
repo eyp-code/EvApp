@@ -36,8 +36,8 @@ shopping_items_box
 
 Siradaki model/storage adimi:
 
-- `ShoppingItem` modeli icindeki artik kullanilmayan fiyat/oncelik alanlarini temizleme ihtiyacini yeniden degerlendirmek.
-- `HouseholdTask` modeli ve buna ait Hive box tasarimini eklemek.
+- Dashboard icin secilen aya gore hesaplanan `MonthlySummary` yapisini netlestirmek.
+- Ilk surumde bu ozeti ayri bir Hive box'a yazmadan derive edip etmeyecegimizi kararlastirmak.
 
 ## Genel Veri Yaklaşımı
 
@@ -216,7 +216,7 @@ Sonuç:
 Toplam ev masrafı: 1200 TL
 Benim payım: 600 TL
 Ev arkadaşımın payı: 600 TL
-Ev arkadaşım bana 600 TL borçlu
+Bu kayıt aylık özette ortak masraf olarak görünür.
 ```
 
 ### Örnek 2 - Kişisel Harcama
@@ -238,7 +238,6 @@ Sonuç:
 ```text
 Toplam ev masrafına eklenmez.
 Benim kişisel harcamama eklenir.
-Borç oluşmaz.
 ```
 
 ---
@@ -572,36 +571,39 @@ Benim Payım = Tüm kayıtların içinde benim share amount toplamım
 Benim Kişisel Harcamam = Sadece bana ait harcamalar
 ```
 
-### Borç Hesaplama
+### Ödeyen Bilgisinin Kullanımı
 
-Kural:
+`paidByPersonId` alanı settlement hesabı üretmek için değil, kayıt ve raporlama için tutulur.
 
-```text
-Bir kişi masrafı ödediyse ve diğer kişilerin payı varsa,
-diğer kişiler ödeyen kişiye borçlanır.
-```
-
-Örnek:
+Örnek kullanım:
 
 ```text
-Toplam: 1000 TL
-Ödeyen: Ben
-Benim payım: 500 TL
-Ev arkadaşımın payı: 500 TL
-
-Ev arkadaşım bana 500 TL borçlu.
+- Bu ay en çok hangi kişi ödeme girdi?
+- Hangi faturayı ben ödedim?
+- Geçmiş ay raporunda ödeme yapan kişiyi göster.
 ```
 
-Ters örnek:
+### MonthlySummary Türetilmiş Yapısı
 
-```text
-Toplam: 1000 TL
-Ödeyen: Ev arkadaşım
-Benim payım: 500 TL
-Ev arkadaşımın payı: 500 TL
+İlk sürümde aylık özet ayrı bir kayıt olarak tutulmak zorunda değildir.
 
-Ben ev arkadaşıma 500 TL borçluyum.
+Seçilen ay için şu alanlar masraf ve fatura verilerinden hesaplanabilir:
+
+```dart
+class MonthlySummary {
+  final int month;
+  final int year;
+  final double assignedToMeTotal;
+  final double sharedExpensesTotal;
+  final double mySharedPortionTotal;
+  final double onlyMeExpensesTotal;
+  final double enteredExpensesTotal;
+  final int paidBillsCount;
+  final int pendingBillsCount;
+}
 ```
+
+Bu yapı dashboard üst özeti ve biten ay arşiv kartları için aynı kaynaktan veri üretir.
 
 ---
 
@@ -680,5 +682,5 @@ Kullanıcıya uyarı gösterilir:
 ```text
 Bu işlem mevcut verilerinin üzerine yedek dosyasındaki verileri yazacak. Devam etmek istiyor musun?
 ```
-> Güncel Dashboard hesaplama dili: Ana takip metriği `Bana yazılan toplam`dır. Bu değer ortak masraflardaki benim payım + sadece bana ait masraflardan oluşur. `Ortak masraflar`, `Benim ortak payım`, `Sadece benim masraflarım` ve `Bu ay girilen toplam` ayrı gösterilir. Borç/alacak veya net borç hesabı yapılmaz.
-> Güncel Dashboard hesaplama dili: Ana takip metriği `Bana yazılan toplam`dır. Bu değer ortak masraflardaki benim payım + sadece bana ait masraflardan oluşur. `Ortak masraflar`, `Benim ortak payım`, `Sadece benim masraflarım` ve `Bu ay girilen toplam` ayrı gösterilir. Borç/alacak veya net borç hesabı yapılmaz.
+> Güncel Dashboard hesaplama dili: Ana takip metriği `Bana yazılan toplam`dır. Bu değer ortak masraflardaki benim payım + sadece bana ait masraflardan oluşur. `Ortak masraflar`, `Benim ortak payım`, `Sadece benim masraflarım` ve `Bu ay girilen toplam` ayrı gösterilir. Settlement hesabı yapılmaz.
+> Güncel Dashboard hesaplama dili: Ana takip metriği `Bana yazılan toplam`dır. Bu değer ortak masraflardaki benim payım + sadece bana ait masraflardan oluşur. `Ortak masraflar`, `Benim ortak payım`, `Sadece benim masraflarım` ve `Bu ay girilen toplam` ayrı gösterilir. Settlement hesabı yapılmaz.

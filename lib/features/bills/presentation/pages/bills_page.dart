@@ -1,15 +1,15 @@
 import 'package:flutter/material.dart';
 
+import '../../../expenses/domain/models/expense.dart';
+import '../../../expenses/domain/models/split_type.dart';
+import '../../../expenses/domain/repositories/expense_repository.dart';
+import '../../../people/domain/repositories/person_repository.dart';
 import '../../domain/models/bill_category.dart';
 import '../../domain/models/bill_share_type.dart';
 import '../../domain/models/bill_status.dart';
 import '../../domain/models/bill_type.dart';
 import '../../domain/models/monthly_bill.dart';
 import '../../domain/repositories/bill_repository.dart';
-import '../../../expenses/domain/models/expense.dart';
-import '../../../expenses/domain/models/split_type.dart';
-import '../../../expenses/domain/repositories/expense_repository.dart';
-import '../../../people/domain/repositories/person_repository.dart';
 
 class BillsPage extends StatefulWidget {
   const BillsPage({
@@ -58,7 +58,8 @@ class _BillsPageState extends State<BillsPage> {
         .where(
           (monthlyBill) =>
               activeBillTypeIds.contains(monthlyBill.billTypeId) ||
-              monthlyBill.isPaid,
+              monthlyBill.isPaid ||
+              monthlyBill.isSkipped,
         )
         .toList();
 
@@ -103,10 +104,28 @@ class _BillsPageState extends State<BillsPage> {
     await _refresh();
   }
 
+  Future<void> _addBillDetails(MonthlyBill monthlyBill) async {
+    final updatedBill = await showDialog<MonthlyBill>(
+      context: context,
+      builder: (context) => _BillDetailsDialog(monthlyBill: monthlyBill),
+    );
+
+    if (updatedBill == null) {
+      return;
+    }
+
+    await widget.billRepository.addMonthlyBill(updatedBill);
+    await _refresh();
+  }
+
   Future<void> _markPaid(MonthlyBill monthlyBill) async {
     if (monthlyBill.amount == null || monthlyBill.amount! <= 0) {
+      if (!mounted) {
+        return;
+      }
+
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Ödemeden önce tutar girilmeli.')),
+        const SnackBar(content: Text('Odemeden once tutar girilmeli.')),
       );
       return;
     }
@@ -151,32 +170,32 @@ class _BillsPageState extends State<BillsPage> {
     await _refresh();
   }
 
-  Future<void> _addBillDetails(MonthlyBill monthlyBill) async {
-    final updatedBill = await showDialog<MonthlyBill>(
-      context: context,
-      builder: (context) => _BillDetailsDialog(monthlyBill: monthlyBill),
-    );
-
-    if (updatedBill == null) {
-      return;
-    }
-
-    await widget.billRepository.addMonthlyBill(updatedBill);
-    await _refresh();
-  }
-
   Future<void> _deleteBillType(BillType billType) async {
     await widget.billRepository.deleteBillType(billType.id);
     await _refresh();
   }
 
-  Future<void> _deleteMonthlyBill(MonthlyBill monthlyBill) async {
+  Future<void> _handleMonthlyBillAction(MonthlyBill monthlyBill) async {
+    if (monthlyBill.isSkipped) {
+      await widget.billRepository.restoreMonthlyBill(monthlyBill.id);
+      await _refresh();
+      return;
+    }
+
+    final billTypes = await widget.billRepository.getBillTypes();
+    final billType = _findBillType(billTypes, monthlyBill.billTypeId);
+    final isRecurring = billType?.isRecurringMonthly ?? false;
+
     final generatedExpenseId = monthlyBill.generatedExpenseId;
     if (generatedExpenseId != null) {
       await widget.expenseRepository.deleteExpense(generatedExpenseId);
     }
 
-    await widget.billRepository.deleteMonthlyBill(monthlyBill.id);
+    if (isRecurring) {
+      await widget.billRepository.skipMonthlyBill(monthlyBill.id);
+    } else {
+      await widget.billRepository.deleteMonthlyBill(monthlyBill.id);
+    }
     await _refresh();
   }
 
@@ -192,8 +211,7 @@ class _BillsPageState extends State<BillsPage> {
           children: [
             _PageHeader(
               title: 'Faturalar',
-              subtitle:
-                  'Tekrarlayan ve tek seferlik faturaları ay ay takip et.',
+              subtitle: 'Tekrarlayan ve tek seferlik faturalari ay ay takip et.',
               onAddTypePressed: _addBillType,
               onAddBillPressed: state.billTypes.isEmpty
                   ? null
@@ -216,7 +234,7 @@ class _BillsPageState extends State<BillsPage> {
                     ? null
                     : () => _addMonthlyBill(state.billTypes),
                 onAddDetails: _addBillDetails,
-                onDeleteMonthlyBill: _deleteMonthlyBill,
+                onDeleteMonthlyBill: _handleMonthlyBillAction,
                 onMarkPaid: _markPaid,
               ),
             ],
@@ -301,7 +319,7 @@ class _AddBillTypeDialogState extends State<_AddBillTypeDialog> {
   @override
   Widget build(BuildContext context) {
     return AlertDialog(
-      title: const Text('Fatura türü ekle'),
+      title: const Text('Fatura turu ekle'),
       content: SingleChildScrollView(
         child: Form(
           key: _formKey,
@@ -312,10 +330,10 @@ class _AddBillTypeDialogState extends State<_AddBillTypeDialog> {
                 controller: _nameController,
                 autofocus: true,
                 textInputAction: TextInputAction.next,
-                decoration: const InputDecoration(labelText: 'Fatura adı'),
+                decoration: const InputDecoration(labelText: 'Fatura adi'),
                 validator: (value) {
                   if (value == null || value.trim().isEmpty) {
-                    return 'Fatura adı gerekli';
+                    return 'Fatura adi gerekli';
                   }
 
                   return null;
@@ -326,11 +344,11 @@ class _AddBillTypeDialogState extends State<_AddBillTypeDialog> {
                 segments: const [
                   ButtonSegment(
                     value: BillCategory.sharedHome,
-                    label: Text('Ev faturası'),
+                    label: Text('Ev faturasi'),
                   ),
                   ButtonSegment(
                     value: BillCategory.personal,
-                    label: Text('Kişisel'),
+                    label: Text('Kisisel'),
                   ),
                 ],
                 selected: {_category},
@@ -343,7 +361,7 @@ class _AddBillTypeDialogState extends State<_AddBillTypeDialog> {
               const SizedBox(height: 12),
               SwitchListTile(
                 contentPadding: EdgeInsets.zero,
-                title: const Text('Aylık tekrarlayan'),
+                title: const Text('Aylik tekrarlayan'),
                 value: _isRecurringMonthly,
                 onChanged: (value) {
                   setState(() {
@@ -380,7 +398,7 @@ class _AddBillTypeDialogState extends State<_AddBillTypeDialog> {
                     );
 
                     if (amount == null || amount <= 0) {
-                      return 'Geçerli bir tutar gir';
+                      return 'Gecerli bir tutar gir';
                     }
 
                     return null;
@@ -392,8 +410,8 @@ class _AddBillTypeDialogState extends State<_AddBillTypeDialog> {
                 alignment: Alignment.centerLeft,
                 child: Text(
                   _category == BillCategory.personal
-                      ? 'Paylaşım: Sadece bana ait'
-                      : 'Paylaşım: Ortak eşit',
+                      ? 'Paylasim: Sadece bana ait'
+                      : 'Paylasim: Ortak esit',
                   style: Theme.of(context).textTheme.bodyMedium,
                 ),
               ),
@@ -404,7 +422,7 @@ class _AddBillTypeDialogState extends State<_AddBillTypeDialog> {
       actions: [
         TextButton(
           onPressed: () => Navigator.of(context).pop(),
-          child: const Text('Vazgeç'),
+          child: const Text('Vazgec'),
         ),
         FilledButton(onPressed: _submit, child: const Text('Kaydet')),
       ],
@@ -481,7 +499,7 @@ class _AddMonthlyBillDialogState extends State<_AddMonthlyBillDialog> {
   @override
   Widget build(BuildContext context) {
     return AlertDialog(
-      title: const Text('Aylık fatura ekle'),
+      title: const Text('Aylik fatura ekle'),
       content: SingleChildScrollView(
         child: Form(
           key: _formKey,
@@ -490,7 +508,7 @@ class _AddMonthlyBillDialogState extends State<_AddMonthlyBillDialog> {
             children: [
               DropdownButtonFormField<String>(
                 initialValue: _billTypeId,
-                decoration: const InputDecoration(labelText: 'Fatura türü'),
+                decoration: const InputDecoration(labelText: 'Fatura turu'),
                 items: widget.billTypes
                     .map(
                       (billType) => DropdownMenuItem(
@@ -539,19 +557,16 @@ class _AddMonthlyBillDialogState extends State<_AddMonthlyBillDialog> {
                   Expanded(
                     child: DropdownButtonFormField<int>(
                       initialValue: _year,
-                      decoration: const InputDecoration(labelText: 'Yıl'),
-                      items:
-                          List.generate(
-                                5,
-                                (index) => DateTime.now().year - 2 + index,
-                              )
-                              .map(
-                                (year) => DropdownMenuItem(
-                                  value: year,
-                                  child: Text(year.toString()),
-                                ),
-                              )
-                              .toList(),
+                      decoration: const InputDecoration(labelText: 'Yil'),
+                      items: List.generate(
+                        5,
+                        (index) => DateTime.now().year - 2 + index,
+                      ).map(
+                        (year) => DropdownMenuItem(
+                          value: year,
+                          child: Text(year.toString()),
+                        ),
+                      ).toList(),
                       onChanged: (value) {
                         if (value == null) {
                           return;
@@ -574,9 +589,8 @@ class _AddMonthlyBillDialogState extends State<_AddMonthlyBillDialog> {
                 textInputAction: TextInputAction.done,
                 decoration: const InputDecoration(
                   labelText: 'Tutar',
-                  helperText: 'Henüz belli değilse boş bırak',
+                  helperText: 'Henuz belli degilse bos birak',
                 ),
-                onFieldSubmitted: (_) => _submit(),
                 validator: (value) {
                   final amountText = (value ?? '').trim().replaceAll(',', '.');
                   if (amountText.isEmpty) {
@@ -584,13 +598,13 @@ class _AddMonthlyBillDialogState extends State<_AddMonthlyBillDialog> {
                   }
 
                   final amount = double.tryParse(amountText);
-
                   if (amount == null || amount <= 0) {
-                    return 'Geçerli bir tutar gir';
+                    return 'Gecerli bir tutar gir';
                   }
 
                   return null;
                 },
+                onFieldSubmitted: (_) => _submit(),
               ),
               const SizedBox(height: 12),
               TextFormField(
@@ -598,7 +612,7 @@ class _AddMonthlyBillDialogState extends State<_AddMonthlyBillDialog> {
                 textInputAction: TextInputAction.done,
                 decoration: const InputDecoration(
                   labelText: 'Not',
-                  helperText: 'İsteğe bağlı',
+                  helperText: 'Istege bagli',
                 ),
               ),
             ],
@@ -608,7 +622,7 @@ class _AddMonthlyBillDialogState extends State<_AddMonthlyBillDialog> {
       actions: [
         TextButton(
           onPressed: () => Navigator.of(context).pop(),
-          child: const Text('Vazgeç'),
+          child: const Text('Vazgec'),
         ),
         FilledButton(onPressed: _submit, child: const Text('Kaydet')),
       ],
@@ -654,7 +668,6 @@ class _BillDetailsDialogState extends State<_BillDetailsDialog> {
     }
 
     final note = _noteController.text.trim();
-
     Navigator.of(context).pop(
       widget.monthlyBill.withDetails(
         amount: double.parse(
@@ -668,7 +681,7 @@ class _BillDetailsDialogState extends State<_BillDetailsDialog> {
   @override
   Widget build(BuildContext context) {
     return AlertDialog(
-      title: const Text('Fatura tutarı gir'),
+      title: const Text('Fatura tutari gir'),
       content: Form(
         key: _formKey,
         child: Column(
@@ -688,7 +701,7 @@ class _BillDetailsDialogState extends State<_BillDetailsDialog> {
                 );
 
                 if (amount == null || amount <= 0) {
-                  return 'Geçerli bir tutar gir';
+                  return 'Gecerli bir tutar gir';
                 }
 
                 return null;
@@ -700,7 +713,7 @@ class _BillDetailsDialogState extends State<_BillDetailsDialog> {
               textInputAction: TextInputAction.done,
               decoration: const InputDecoration(
                 labelText: 'Not',
-                helperText: 'İsteğe bağlı',
+                helperText: 'Istege bagli',
               ),
               onFieldSubmitted: (_) => _submit(),
             ),
@@ -710,7 +723,7 @@ class _BillDetailsDialogState extends State<_BillDetailsDialog> {
       actions: [
         TextButton(
           onPressed: () => Navigator.of(context).pop(),
-          child: const Text('Vazgeç'),
+          child: const Text('Vazgec'),
         ),
         FilledButton(onPressed: _submit, child: const Text('Kaydet')),
       ],
@@ -732,15 +745,15 @@ class _BillTypesSection extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return _SectionCard(
-      title: 'Fatura türleri',
+      title: 'Fatura turleri',
       action: TextButton.icon(
         onPressed: onAddPressed,
         icon: const Icon(Icons.add),
-        label: const Text('Tür ekle'),
+        label: const Text('Tur ekle'),
       ),
       child: billTypes.isEmpty
           ? const _EmptyText(
-              'Önce su, elektrik veya kira gibi bir fatura türü ekle.',
+              'Once su, elektrik veya kira gibi bir fatura turu ekle.',
             )
           : Column(
               children: billTypes
@@ -750,11 +763,11 @@ class _BillTypesSection extends StatelessWidget {
                       title: Text(billType.name),
                       subtitle: Text(
                         billType.isRecurringMonthly
-                            ? 'Aylık tekrarlayan'
+                            ? 'Aylik tekrarlayan'
                             : 'Tek seferlik',
                       ),
                       trailing: IconButton(
-                        tooltip: 'Fatura türünü sil',
+                        tooltip: 'Fatura turunu sil',
                         onPressed: () => onDeletePressed(billType),
                         icon: const Icon(Icons.delete_outline),
                       ),
@@ -786,17 +799,18 @@ class _MonthlyBillsSection extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return _SectionCard(
-      title: 'Aylık faturalar',
+      title: 'Aylik faturalar',
       action: TextButton.icon(
         onPressed: onAddPressed,
         icon: const Icon(Icons.add),
         label: const Text('Fatura ekle'),
       ),
       child: monthlyBills.isEmpty
-          ? const _EmptyText('Aylık fatura kaydı henüz yok.')
+          ? const _EmptyText('Aylik fatura kaydi henuz yok.')
           : _GroupedMonthlyBills(
               monthlyBills: monthlyBills,
               billTypeNameFor: _billTypeName,
+              billTypeFor: _billType,
               onAddDetails: onAddDetails,
               onDeleteMonthlyBill: onDeleteMonthlyBill,
               onMarkPaid: onMarkPaid,
@@ -813,12 +827,23 @@ class _MonthlyBillsSection extends StatelessWidget {
 
     return monthlyBill.billTypeName;
   }
+
+  BillType? _billType(MonthlyBill monthlyBill) {
+    for (final billType in billTypes) {
+      if (billType.id == monthlyBill.billTypeId) {
+        return billType;
+      }
+    }
+
+    return null;
+  }
 }
 
 class _GroupedMonthlyBills extends StatelessWidget {
   const _GroupedMonthlyBills({
     required this.monthlyBills,
     required this.billTypeNameFor,
+    required this.billTypeFor,
     required this.onAddDetails,
     required this.onDeleteMonthlyBill,
     required this.onMarkPaid,
@@ -826,6 +851,7 @@ class _GroupedMonthlyBills extends StatelessWidget {
 
   final List<MonthlyBill> monthlyBills;
   final String Function(MonthlyBill monthlyBill) billTypeNameFor;
+  final BillType? Function(MonthlyBill monthlyBill) billTypeFor;
   final ValueChanged<MonthlyBill> onAddDetails;
   final ValueChanged<MonthlyBill> onDeleteMonthlyBill;
   final ValueChanged<MonthlyBill> onMarkPaid;
@@ -860,6 +886,8 @@ class _GroupedMonthlyBills extends StatelessWidget {
               (monthlyBill) => _MonthlyBillTile(
                 monthlyBill: monthlyBill,
                 billTypeName: billTypeNameFor(monthlyBill),
+                isRecurring:
+                    billTypeFor(monthlyBill)?.isRecurringMonthly ?? false,
                 onAddDetails: () => onAddDetails(monthlyBill),
                 onDelete: () => onDeleteMonthlyBill(monthlyBill),
                 onMarkPaid: () => onMarkPaid(monthlyBill),
@@ -877,6 +905,7 @@ class _MonthlyBillTile extends StatelessWidget {
   const _MonthlyBillTile({
     required this.monthlyBill,
     required this.billTypeName,
+    required this.isRecurring,
     required this.onAddDetails,
     required this.onDelete,
     required this.onMarkPaid,
@@ -884,6 +913,7 @@ class _MonthlyBillTile extends StatelessWidget {
 
   final MonthlyBill monthlyBill;
   final String billTypeName;
+  final bool isRecurring;
   final VoidCallback onAddDetails;
   final VoidCallback onDelete;
   final VoidCallback onMarkPaid;
@@ -900,8 +930,14 @@ class _MonthlyBillTile extends StatelessWidget {
           Icon(
             monthlyBill.isPaid
                 ? Icons.check_circle_outline
+                : monthlyBill.isSkipped
+                ? Icons.skip_next_outlined
                 : Icons.pending_actions_outlined,
-            color: monthlyBill.isPaid ? Colors.green : colorScheme.primary,
+            color: monthlyBill.isPaid
+                ? Colors.green
+                : monthlyBill.isSkipped
+                ? colorScheme.secondary
+                : colorScheme.primary,
           ),
           const SizedBox(width: 12),
           Expanded(
@@ -954,7 +990,12 @@ class _MonthlyBillTile extends StatelessWidget {
                   fontWeight: FontWeight.w800,
                 ),
               ),
-              if (monthlyBill.amount == null && !monthlyBill.isPaid)
+              if (monthlyBill.isSkipped)
+                TextButton(
+                  onPressed: onDelete,
+                  child: const Text('Geri getir'),
+                )
+              else if (monthlyBill.amount == null && !monthlyBill.isPaid)
                 TextButton(
                   onPressed: onAddDetails,
                   child: const Text('Tutar gir'),
@@ -962,12 +1003,14 @@ class _MonthlyBillTile extends StatelessWidget {
               else if (!monthlyBill.isPaid)
                 TextButton(
                   onPressed: onMarkPaid,
-                  child: const Text('Ödendi işaretle'),
+                  child: const Text('Odendi isaretle'),
                 ),
               IconButton(
-                tooltip: 'Aylık faturayı sil',
+                tooltip: isRecurring ? 'Bu ayi atla' : 'Aylik faturayi sil',
                 onPressed: onDelete,
-                icon: const Icon(Icons.delete_outline),
+                icon: Icon(
+                  isRecurring ? Icons.skip_next_outlined : Icons.delete_outline,
+                ),
               ),
             ],
           ),
@@ -1073,13 +1116,13 @@ class _PageHeader extends StatelessWidget {
           ),
         ),
         IconButton.filledTonal(
-          tooltip: 'Fatura türü ekle',
+          tooltip: 'Fatura turu ekle',
           onPressed: onAddTypePressed,
           icon: const Icon(Icons.playlist_add),
         ),
         const SizedBox(width: 8),
         IconButton.filled(
-          tooltip: 'Aylık fatura ekle',
+          tooltip: 'Aylik fatura ekle',
           onPressed: onAddBillPressed,
           icon: const Icon(Icons.add),
         ),
@@ -1095,9 +1138,10 @@ String _formatAmount(double amount) {
 String _statusLabel(String status) {
   return switch (status) {
     BillStatus.amountWaiting => 'Tutar Bekleniyor',
-    BillStatus.readyToPay => 'Ödenmeye Hazır',
-    BillStatus.paid => 'Ödendi',
+    BillStatus.readyToPay => 'Odenmeye Hazir',
+    BillStatus.paid => 'Odendi',
     BillStatus.overdue => 'Gecikti',
+    BillStatus.skipped => 'Bu ay atlandi',
     _ => 'Bilinmeyen',
   };
 }
@@ -1108,6 +1152,7 @@ Color _statusColor(String status, ColorScheme colorScheme) {
     BillStatus.readyToPay => colorScheme.primary,
     BillStatus.paid => Colors.green,
     BillStatus.overdue => colorScheme.error,
+    BillStatus.skipped => colorScheme.secondary,
     _ => colorScheme.onSurfaceVariant,
   };
 }
@@ -1115,17 +1160,17 @@ Color _statusColor(String status, ColorScheme colorScheme) {
 String _monthName(int month) {
   const monthNames = [
     'Ocak',
-    'Şubat',
+    'Subat',
     'Mart',
     'Nisan',
-    'Mayıs',
+    'Mayis',
     'Haziran',
     'Temmuz',
-    'Ağustos',
-    'Eylül',
+    'Agustos',
+    'Eylul',
     'Ekim',
-    'Kasım',
-    'Aralık',
+    'Kasim',
+    'Aralik',
   ];
 
   if (month < 1 || month > monthNames.length) {

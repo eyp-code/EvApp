@@ -26,9 +26,16 @@ Bu nedenle backup hardening backlog'a alindi.
 
 Yeni siradaki adim:
 
-- Shopping list icin urun duzenleme
-- Shopping list icin kategori filtresi
-- Sonra Household Tasks MVP
+- Dashboard icin aylik ozet arsivi
+- Biten ay kartina tiklaninca acilan aylik rapor
+- Sonra shopping list urun duzenleme ve kategori filtresi
+
+## Guncel Dokuman Karari - 2026-07-06
+
+- Ana markdown dokumanlarindaki eski settlement dili temizleniyor.
+- Uygulamanin aktif finans dili `Bana yazilan toplam` ve pay takibi olarak korunuyor.
+- Yeni urun karari olarak ana sayfaya `biten ay ozeti` arsivi ekleniyor.
+- Bu arsivde aylar asagi dogru birikir ve karta tiklaninca o aya ait dashboard + masraf + fatura raporu acilir.
 
 ## Commit Kurali
 
@@ -128,7 +135,7 @@ Bu dosya proje boyunca AI ile yapılan kararları, kod değişikliklerini ve ger
 - Veriler JSON export/import ile yedeklenebilir olacak.
 - Modeller ileride Firebase/backend sync için id, tarih, soft delete ve sync alanlarına hazır tasarlanacak.
 - MVP odağı: person sistemi, masraf ekleme, ortak gider bölme, fatura takibi, dashboard özet, local kayıt ve JSON yedekleme.
-- Masraf paylaşımı olacak ama borç/alacak takibi olmayacak. Uygulama "kim kime borçlu" veya "net borç" hesabı göstermeyecek.
+- Masraf paylaşımı olacak ama uygulama settlement takibi yapmayacak.
 - Masraflarda "kim ödedi" bilgisi tutulabilir; bu bilgi sadece kayıt, filtreleme ve raporlama için kullanılacak.
 
 ## İncelenen Dokümanlar
@@ -366,8 +373,8 @@ Phase 1 ile başlamak:
 - Ev arkadaşı ve ortak masraf paylaşımı kalacak.
 - Kullanıcı bir masrafı ikiye bölebilecek veya farklı paylarla bölebilecek.
 - Kullanıcı "kim ödedi?" bilgisini seçebilecek.
-- Uygulama borç/alacak takibi yapmayacak.
-- Dashboard veya raporlarda "kim kime borçlu", "bana borçlu", "ben ona borçluyum", "net borç" gibi alanlar olmayacak.
+- Uygulama settlement takibi yapmayacak.
+- Dashboard veya raporlarda settlement alanları olmayacak.
 
 **Neden**
 
@@ -382,14 +389,14 @@ Phase 1 ile başlamak:
 
 **Kodda yapılan düzeltme**
 
-- Dashboard placeholder metnindeki `net borç` ifadesi kaldırıldı.
+- Dashboard placeholder metnindeki eski settlement ifadesi kaldırıldı.
 - Yerine `kişisel harcamam` ifadesi kullanıldı.
 
 **Gelecek geliştirme notu**
 
-- ExpenseCalculator yazılırken debt/net debt fonksiyonları eklenmeyecek.
-- `paidByPersonId` alanı yine tutulabilir, ama borç üretmek için değil; sadece "bu kaydı kim ödedi?" bilgisini saklamak için.
-- AI ileride eski dokümanlarda borç ifadesi görürse bu tracking kararını daha güncel kaynak kabul edecek.
+- ExpenseCalculator yazılırken settlement fonksiyonları eklenmeyecek.
+- `paidByPersonId` alanı yine tutulabilir, ama settlement üretmek için değil; sadece "bu kaydı kim ödedi?" bilgisini saklamak için.
+- AI ileride eski dokümanlarda settlement ifadesi görürse bu tracking kararını daha güncel kaynak kabul edecek.
 ### 2026-07-03 - Phase 3 Person / Roommate Sistemi Başlangıcı
 
 **Ne yaptık**
@@ -559,7 +566,7 @@ Phase 1 ile başlamak:
 
 **Neden**
 
-- Bu uygulamada amaç kasadan kimin ne kadar ödediğini borç/alacak gibi takip etmek değil.
+- Bu uygulamada amaç kasadan kimin ne kadar ödediğini settlement gibi takip etmek değil.
 - Kullanıcının görmek istediği kişisel harcama, kendi payına düşen harcama tutarı.
 - Bu yüzden ev arkadaşı ödemiş olsa bile ortak eşit masrafta kullanıcının kişisel harcaması kendi payı kadar olmalı.
 
@@ -584,7 +591,7 @@ Phase 1 ile başlamak:
 
 - `Benim payım` yalnızca ortak bölünen masraflardan kullanıcıya düşen tutarı gösterecek.
 - `Kişisel harcamam`, ortak masraflardaki kullanıcı payı + sadece kullanıcıya ait masrafların toplamı olacak.
-- `paidByPersonId` borç/alacak hesabı üretmeyecek; sadece "bu kaydı kim ödedi?" bilgisi olarak kalacak.
+- `paidByPersonId` settlement hesabı üretmeyecek; sadece "bu kaydı kim ödedi?" bilgisi olarak kalacak.
 
 **Örnek**
 
@@ -605,8 +612,8 @@ Phase 1 ile başlamak:
 - `PROJECT_PLAN.md` güncellendi.
 - `06_DEVELOPMENT_ROADMAP.md` güncellendi.
 - `AI_TRACKING.md` güncellendi.
-> Güncel Dashboard hesaplama dili: Ana takip metriği `Bana yazılan toplam`dır. Bu değer ortak masraflardaki benim payım + sadece bana ait masraflardan oluşur. `Ortak masraflar`, `Benim ortak payım`, `Sadece benim masraflarım` ve `Bu ay girilen toplam` ayrı gösterilir. Borç/alacak veya net borç hesabı yapılmaz.
-> Güncel Dashboard hesaplama dili: Ana takip metriği `Bana yazılan toplam`dır. Bu değer ortak masraflardaki benim payım + sadece bana ait masraflardan oluşur. `Ortak masraflar`, `Benim ortak payım`, `Sadece benim masraflarım` ve `Bu ay girilen toplam` ayrı gösterilir. Borç/alacak veya net borç hesabı yapılmaz.
+> Güncel Dashboard hesaplama dili: Ana takip metriği `Bana yazılan toplam`dır. Bu değer ortak masraflardaki benim payım + sadece bana ait masraflardan oluşur. `Ortak masraflar`, `Benim ortak payım`, `Sadece benim masraflarım` ve `Bu ay girilen toplam` ayrı gösterilir. Settlement hesabı yapılmaz.
+> Güncel Dashboard hesaplama dili: Ana takip metriği `Bana yazılan toplam`dır. Bu değer ortak masraflardaki benim payım + sadece bana ait masraflardan oluşur. `Ortak masraflar`, `Benim ortak payım`, `Sadece benim masraflarım` ve `Bu ay girilen toplam` ayrı gösterilir. Settlement hesabı yapılmaz.
 ### 2026-07-03 - Dashboard Hesaplama Dilinin Netleştirilmesi
 
 **Ürün kararı**
@@ -617,7 +624,7 @@ Phase 1 ile başlamak:
 - `Benim ortak payım` yalnızca ortak masraflardan bana düşen tutarı gösterir.
 - `Sadece benim masraflarım` ortak olmayan, doğrudan bana ait masrafları gösterir.
 - `Bu ay girilen toplam` uygulamaya girilen tüm masrafların toplamını gösterir.
-- Borç/alacak ve net borç hesabı yine kapsam dışıdır.
+- Settlement hesabı yine kapsam dışıdır.
 
 **Örnek**
 
@@ -652,7 +659,7 @@ Phase 1 ile başlamak:
   - `Benim ortak payım`
   - `Sadece benim masraflarım`
   - `Bu ay girilen toplam`
-- Borç/alacak ve net borç hesabı kapsam dışı.
+- Settlement hesabı kapsam dışı.
 
 **Ara sonrası önerilen sıra**
 
@@ -972,3 +979,4 @@ Phase 1 ile başlamak:
 - `dart format lib test` basarili.
 - `flutter analyze` basarili, issue yok.
 - `flutter test` basarili, 10 test gecti.
+

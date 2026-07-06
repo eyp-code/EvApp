@@ -7,7 +7,7 @@ import '../../../../core/backup/file_backup_gateway.dart';
 import '../../bills/domain/models/bill_type.dart';
 import '../../bills/domain/models/monthly_bill.dart';
 import '../../bills/presentation/pages/bills_page.dart';
-import '../../dashboard/presentation/pages/dashboard_page.dart';
+import '../../dashboard/presentation/pages/dashboard_home_page.dart';
 import '../../expenses/domain/models/expense.dart';
 import '../../expenses/presentation/pages/expenses_page.dart';
 import '../../people/domain/models/person.dart';
@@ -40,10 +40,11 @@ class _MainShellState extends State<MainShell> {
   @override
   Widget build(BuildContext context) {
     final pages = [
-      DashboardPage(
+      DashboardHomePage(
         key: ValueKey('dashboard-$_dataRevision'),
         personRepository: widget.dependencies.personRepository,
         expenseRepository: widget.dependencies.expenseRepository,
+        billRepository: widget.dependencies.billRepository,
       ),
       ExpensesPage(
         key: ValueKey('expenses-$_dataRevision'),
@@ -90,7 +91,7 @@ class _MainShellState extends State<MainShell> {
           NavigationDestination(
             icon: Icon(Icons.dashboard_outlined),
             selectedIcon: Icon(Icons.dashboard),
-            label: 'Özet',
+            label: 'Ozet',
           ),
           NavigationDestination(
             icon: Icon(Icons.receipt_long_outlined),
@@ -110,7 +111,7 @@ class _MainShellState extends State<MainShell> {
           NavigationDestination(
             icon: Icon(Icons.task_alt_outlined),
             selectedIcon: Icon(Icons.task_alt),
-            label: 'Görev',
+            label: 'Gorev',
           ),
           NavigationDestination(
             icon: Icon(Icons.settings_outlined),

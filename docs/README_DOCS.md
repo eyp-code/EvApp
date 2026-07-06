@@ -135,4 +135,4 @@ Kod yazarken ana kural:
 > Sayfalar doğrudan Hive, Firebase veya başka bir veri kaynağını bilmemeli. Sayfalar sadece Repository katmanıyla konuşmalı.
 
 Bu sayede ileride backend eklendiğinde tüm uygulamayı baştan yazmak gerekmez.
-> Güncel Dashboard hesaplama dili: Ana takip metriği `Bana yazılan toplam`dır. Bu değer ortak masraflardaki benim payım + sadece bana ait masraflardan oluşur. `Ortak masraflar`, `Benim ortak payım`, `Sadece benim masraflarım` ve `Bu ay girilen toplam` ayrı gösterilir. Borç/alacak veya net borç hesabı yapılmaz.
+> Güncel Dashboard hesaplama dili: Ana takip metriği `Bana yazılan toplam`dır. Bu değer ortak masraflardaki benim payım + sadece bana ait masraflardan oluşur. `Ortak masraflar`, `Benim ortak payım`, `Sadece benim masraflarım` ve `Bu ay girilen toplam` ayrı gösterilir. Settlement hesabı yapılmaz.

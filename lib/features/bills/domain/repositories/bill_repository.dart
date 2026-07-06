@@ -18,6 +18,10 @@ abstract class BillRepository {
 
   Future<void> deleteMonthlyBill(String monthlyBillId);
 
+  Future<void> skipMonthlyBill(String monthlyBillId);
+
+  Future<void> restoreMonthlyBill(String monthlyBillId);
+
   Future<void> ensureMonthlyBillsForMonth({
     required int year,
     required int month,

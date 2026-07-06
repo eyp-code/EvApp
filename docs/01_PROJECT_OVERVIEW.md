@@ -24,8 +24,9 @@ Tamamlanan ana akislari:
 
 Siradaki gelistirme hedefi:
 
-- Shopping list icin urun duzenleme ve kategori filtresi.
-- Sonra Household Tasks MVP.
+- Dashboard icin aylik ozet arsivi akisini netlestirmek.
+- Biten aylar icin tiklanabilir rapor kartlari eklemek.
+- Sonra shopping list duzenleme ve kategori filtresine donmek.
 
 Bu siralama bilincli: shopping listte gunluk kullanim ergonomisini tamamlayip sonra yeni modula gecilecek.
 
@@ -60,7 +61,7 @@ Ev masrafları genellikle farklı yerlerde takip edilir:
 
 - Faturalar banka uygulamasında
 - Market harcamaları notlarda
-- Ev arkadaşı borçları mesajlarda
+- Ay sonu özetleri farklı yerlerde kalır
 - Alınacaklar WhatsApp’ta
 - Ev görevleri akılda
 - Abonelikler unutulmuş durumda
@@ -69,7 +70,7 @@ Bu durum karışıklık oluşturur.
 
 EvApp’in çözmek istediği temel problem:
 
-> Evde ne harcandı, benim payıma ne düştü, kim kime ne kadar borçlu, hangi fatura unutuldu?
+> Evde ne harcandı, benim payıma ne düştü, hangi fatura unutuldu ve biten ay nasıl kapandı?
 
 ---
 
@@ -152,6 +153,14 @@ Ana sayfada aylık özet gösterilir:
 - Bütçe durumu
 - Alınacak ürün sayısı
 - Bekleyen ev görevleri
+
+Ana sayfada ayrıca biten aylar için aşağı doğru biriken bir özet arşivi bulunabilir:
+
+- Haziran 2026 özeti
+- Mayıs 2026 özeti
+- Nisan 2026 özeti
+
+Her özet kartına tıklanınca o aya ait dashboard bilgileri, masraf toplamları ve fatura durumu tek raporda açılır.
 
 ---
 
@@ -314,5 +323,6 @@ MVP başarılı sayılırsa:
 - Çoklu ev desteği
 
 Bunlar ileriki sürümlere bırakılacaktır.
-> Güncel Dashboard hesaplama dili: Ana takip metriği `Bana yazılan toplam`dır. Bu değer ortak masraflardaki benim payım + sadece bana ait masraflardan oluşur. `Ortak masraflar`, `Benim ortak payım`, `Sadece benim masraflarım` ve `Bu ay girilen toplam` ayrı gösterilir. Borç/alacak veya net borç hesabı yapılmaz.
-> Güncel Dashboard hesaplama dili: Ana takip metriği `Bana yazılan toplam`dır. Bu değer ortak masraflardaki benim payım + sadece bana ait masraflardan oluşur. `Ortak masraflar`, `Benim ortak payım`, `Sadece benim masraflarım` ve `Bu ay girilen toplam` ayrı gösterilir. Borç/alacak veya net borç hesabı yapılmaz.
+> Güncel Dashboard hesaplama dili: Ana takip metriği `Bana yazılan toplam`dır. Bu değer ortak masraflardaki benim payım + sadece bana ait masraflardan oluşur. `Ortak masraflar`, `Benim ortak payım`, `Sadece benim masraflarım` ve `Bu ay girilen toplam` ayrı gösterilir. Settlement hesabı yapılmaz.
+> Güncel Dashboard hesaplama dili: Ana takip metriği `Bana yazılan toplam`dır. Bu değer ortak masraflardaki benim payım + sadece bana ait masraflardan oluşur. `Ortak masraflar`, `Benim ortak payım`, `Sadece benim masraflarım` ve `Bu ay girilen toplam` ayrı gösterilir. Settlement hesabı yapılmaz.
+

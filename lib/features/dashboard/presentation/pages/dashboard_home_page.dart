@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../../../../shared/widgets/section_placeholder.dart';
 import '../../../bills/domain/models/bill_status.dart';
 import '../../../bills/domain/models/monthly_bill.dart';
+import '../../../bills/domain/models/bill_type.dart';
 import '../../../bills/domain/repositories/bill_repository.dart';
 import '../../../expenses/domain/models/expense.dart';
 import '../../../expenses/domain/repositories/expense_repository.dart';
@@ -11,8 +12,8 @@ import '../../../people/domain/repositories/person_repository.dart';
 import '../../domain/models/monthly_summary.dart';
 import '../../domain/services/monthly_summary_service.dart';
 
-class DashboardPage extends StatelessWidget {
-  const DashboardPage({
+class DashboardHomePage extends StatelessWidget {
+  const DashboardHomePage({
     super.key,
     required this.personRepository,
     required this.expenseRepository,
@@ -28,18 +29,18 @@ class DashboardPage extends StatelessWidget {
     final now = DateTime.now();
 
     return _PageLayout(
-      title: 'Ev Ã–zeti',
-      subtitle: 'Bu ay harcamalar nasÄ±l daÄŸÄ±ldÄ±?',
+      title: 'Ev Ozeti',
+      subtitle: 'Bu ay harcamalar nasil dagildi?',
       children: [
-        FutureBuilder(
+        FutureBuilder<Person?>(
           future: personRepository.getMe(),
           builder: (context, snapshot) {
             final name = snapshot.data?.name ?? 'Ben';
 
             return SectionPlaceholder(
-              title: 'HoÅŸ geldin, $name',
+              title: 'Hos geldin, $name',
               description:
-                  'KiÅŸi, masraf ve fatura kayÄ±tlarÄ± local veritabanÄ±nda saklanÄ±yor.',
+                  'Kisi, masraf ve fatura kayitlari local veritabaninda saklaniyor.',
               icon: Icons.person_outline,
             );
           },
@@ -54,8 +55,8 @@ class DashboardPage extends StatelessWidget {
             final data = snapshot.data;
             if (data == null) {
               return const SectionPlaceholder(
-                title: 'AylÄ±k Ã¶zet hazÄ±r deÄŸil',
-                description: 'Dashboard verisi oluÅŸturulamadÄ±.',
+                title: 'Aylik ozet hazir degil',
+                description: 'Dashboard verisi olusturulamadi.',
                 icon: Icons.info_outline,
               );
             }
@@ -87,12 +88,18 @@ class DashboardPage extends StatelessWidget {
     final results = await Future.wait([
       personRepository.getMe(),
       expenseRepository.getExpenses(),
+      billRepository.getBillTypes(),
       billRepository.getMonthlyBills(),
     ]);
 
     final me = results[0] as Person?;
     final expenses = results[1] as List<Expense>;
-    final monthlyBills = results[2] as List<MonthlyBill>;
+    final billTypes = results[2] as List<BillType>;
+    final monthlyBills = _filterVisibleMonthlyBills(
+      billTypes: billTypes,
+      monthlyBills: results[3] as List<MonthlyBill>,
+    );
+
     if (me == null) {
       return _DashboardData.empty();
     }
@@ -111,6 +118,7 @@ class DashboardPage extends StatelessWidget {
       expenses: expenses,
       monthlyBills: monthlyBills,
     );
+
     final archivedSummaries = <String, MonthlySummary>{};
     for (final month in archivedMonths) {
       archivedSummaries[_monthKey(month.year, month.month)] = service.build(
@@ -127,6 +135,19 @@ class DashboardPage extends StatelessWidget {
       archivedMonths: archivedMonths,
       archivedSummaries: archivedSummaries,
     );
+  }
+
+  List<MonthlyBill> _filterVisibleMonthlyBills({
+    required List<BillType> billTypes,
+    required List<MonthlyBill> monthlyBills,
+  }) {
+    final activeBillTypeIds = billTypes.map((billType) => billType.id).toSet();
+
+    return monthlyBills.where((monthlyBill) {
+      return activeBillTypeIds.contains(monthlyBill.billTypeId) ||
+          monthlyBill.isPaid ||
+          monthlyBill.isSkipped;
+    }).toList();
   }
 }
 
@@ -147,13 +168,13 @@ class MonthlySummaryPage extends StatelessWidget {
           _BillsOverviewCard(summary: summary),
           const SizedBox(height: 16),
           _MonthlyBillListCard(
-            title: 'Ödenen faturalar',
-            emptyText: 'Bu ay ödenmiş fatura yok.',
+            title: 'Odenen faturalar',
+            emptyText: 'Bu ay odenmis fatura yok.',
             bills: summary.paidBills,
           ),
           const SizedBox(height: 16),
           _MonthlyBillListCard(
-            title: 'Ödenmemiş faturalar',
+            title: 'Odenmeyen faturalar',
             emptyText: 'Bu ay bekleyen fatura yok.',
             bills: summary.unpaidBills,
           ),
@@ -217,7 +238,7 @@ class _FinanceSummaryCard extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              'Bana yazÄ±lan toplam',
+              'Bana yazilan toplam',
               style: Theme.of(
                 context,
               ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w800),
@@ -232,7 +253,7 @@ class _FinanceSummaryCard extends StatelessWidget {
             ),
             const SizedBox(height: 4),
             Text(
-              'Ortak payÄ±m ve sadece bana ait masraflarÄ±n toplamÄ±.',
+              'Ortak payim ve sadece bana ait masraflarin toplami.',
               style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                 color: colorScheme.onSurfaceVariant,
               ),
@@ -243,11 +264,11 @@ class _FinanceSummaryCard extends StatelessWidget {
               value: _formatAmount(summary.sharedExpensesTotal),
             ),
             _SummaryRow(
-              label: 'Benim ortak payÄ±m',
+              label: 'Benim ortak payim',
               value: _formatAmount(summary.mySharedShareTotal),
             ),
             _SummaryRow(
-              label: 'Sadece benim masraflarÄ±m',
+              label: 'Sadece benim masraflarim',
               value: _formatAmount(summary.onlyMeExpensesTotal),
             ),
             _SummaryRow(
@@ -282,12 +303,12 @@ class _BillsOverviewCard extends StatelessWidget {
             ),
             const SizedBox(height: 12),
             _SummaryRow(
-              label: 'Ödenen faturalar',
-              value: summary.paidBillsCount.toString(),
+              label: 'Odenen fatura sayisi',
+              value: summary.paidBills.length.toString(),
             ),
             _SummaryRow(
-              label: 'Ödenmeyen faturalar',
-              value: summary.unpaidBillsCount.toString(),
+              label: 'Odenmeyen fatura sayisi',
+              value: summary.unpaidBills.length.toString(),
             ),
           ],
         ),
@@ -309,9 +330,9 @@ class _ArchiveSection extends StatelessWidget {
   Widget build(BuildContext context) {
     if (archivedMonths.isEmpty) {
       return const SectionPlaceholder(
-        title: 'Biten ay Ã¶zeti yok',
+        title: 'Biten ay ozeti yok',
         description:
-            'Ä°lk kapanan ay oluÅŸtuÄŸunda burada aylÄ±k rapor kartlarÄ± birikecek.',
+            'Ilk kapanan ay olustugunda burada aylik rapor kartlari birikecek.',
         icon: Icons.archive_outlined,
       );
     }
@@ -334,6 +355,7 @@ class _ArchiveSection extends StatelessWidget {
                 month.year,
                 month.month,
               )];
+
               if (summary == null) {
                 return const SizedBox.shrink();
               }
@@ -381,10 +403,10 @@ class _ArchiveSummaryTile extends StatelessWidget {
                     ),
                     const SizedBox(height: 6),
                     Text(
-                      'Bana yazÄ±lan toplam: ${_formatAmount(summary.assignedToMeTotal)}',
+                      'Bana yazilan toplam: ${_formatAmount(summary.assignedToMeTotal)}',
                     ),
                     Text(
-                      'Faturalar: ${summary.paidBillsCount} Ã¶denen, ${summary.unpaidBillsCount} Ã¶denmeyen',
+                      'Faturalar: ${summary.paidBills.length} odenen, ${summary.unpaidBills.length} odenmeyen',
                     ),
                   ],
                 ),
@@ -464,7 +486,7 @@ class _ExpenseListCard extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              'Masraflar özeti',
+              'Masraflar ozeti',
               style: Theme.of(
                 context,
               ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w800),
@@ -486,7 +508,7 @@ class _ExpenseListCard extends StatelessWidget {
                           children: [
                             Text(expense.title),
                             Text(
-                              '${expense.category} • ${_formatDate(expense.spentAt)}',
+                              '${expense.category} - ${_formatDate(expense.spentAt)}',
                               style: Theme.of(context).textTheme.bodySmall,
                             ),
                           ],
@@ -581,17 +603,17 @@ String _formatAmount(double amount) {
 String _formatMonthYear(int month, int year) {
   const monthNames = [
     'Ocak',
-    'Åubat',
+    'Subat',
     'Mart',
     'Nisan',
-    'MayÄ±s',
+    'Mayis',
     'Haziran',
     'Temmuz',
-    'AÄŸustos',
-    'EylÃ¼l',
+    'Agustos',
+    'Eylul',
     'Ekim',
-    'KasÄ±m',
-    'AralÄ±k',
+    'Kasim',
+    'Aralik',
   ];
 
   return '${monthNames[month - 1]} $year';
@@ -606,8 +628,8 @@ String _formatDate(DateTime date) {
 String _statusLabel(String status) {
   return switch (status) {
     BillStatus.amountWaiting => 'Tutar Bekleniyor',
-    BillStatus.readyToPay => 'Ã–denmeye HazÄ±r',
-    BillStatus.paid => 'Ã–dendi',
+    BillStatus.readyToPay => 'Odenmeye Hazir',
+    BillStatus.paid => 'Odendi',
     BillStatus.overdue => 'Gecikti',
     _ => 'Bilinmeyen',
   };

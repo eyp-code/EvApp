@@ -233,16 +233,144 @@ void main() {
     );
     await tester.pumpAndSettle();
 
-    expect(find.text('Bana yazılan toplam'), findsOneWidget);
+    expect(find.text('Bana yazilan toplam'), findsOneWidget);
     expect(find.text('Ortak masraflar'), findsOneWidget);
-    expect(find.text('Benim ortak payım'), findsOneWidget);
-    expect(find.text('Sadece benim masraflarım'), findsOneWidget);
+    expect(find.text('Benim ortak payim'), findsOneWidget);
+    expect(find.text('Sadece benim masraflarim'), findsOneWidget);
     expect(find.text('Bu ay girilen toplam'), findsOneWidget);
     expect(find.text('800.00 TL'), findsOneWidget);
     expect(find.text('1200.00 TL'), findsOneWidget);
     expect(find.text('600.00 TL'), findsOneWidget);
     expect(find.text('200.00 TL'), findsOneWidget);
     expect(find.text('1400.00 TL'), findsOneWidget);
+  });
+
+  testWidgets('Dashboard shows archived month summary and opens detail page', (
+    WidgetTester tester,
+  ) async {
+    final personRepository = _FakePersonRepository.withRoommate();
+    final persons = await personRepository.getPersons();
+    final me = persons.firstWhere((person) => person.isMe);
+    final roommate = persons.firstWhere((person) => !person.isMe);
+    final expenseRepository = _FakeExpenseRepository();
+    final billRepository = _FakeBillRepository();
+    final previousMonthDate = DateTime.now().month == 1
+        ? DateTime(DateTime.now().year - 1, 12, 10)
+        : DateTime(DateTime.now().year, DateTime.now().month - 1, 10);
+
+    await expenseRepository.addExpense(
+      Expense.create(
+        title: 'Gecen Ay Market',
+        category: 'Market',
+        totalAmount: 1000,
+        spentAt: previousMonthDate,
+        paidByPersonId: roommate.id,
+        splitType: SplitType.equal,
+        participantIds: [me.id, roommate.id],
+      ),
+    );
+    await expenseRepository.addExpense(
+      Expense.create(
+        title: 'Gecen Ay Kahve',
+        category: 'Kafe',
+        totalAmount: 150,
+        spentAt: previousMonthDate,
+        paidByPersonId: me.id,
+        splitType: SplitType.onlyMe,
+        participantIds: [me.id],
+      ),
+    );
+    await billRepository.addMonthlyBill(
+      MonthlyBill.create(
+        billTypeId: 'su',
+        billTypeName: 'Su',
+        year: previousMonthDate.year,
+        month: previousMonthDate.month,
+        amount: 400,
+      ).markedPaid(),
+    );
+    await billRepository.addMonthlyBill(
+      MonthlyBill.create(
+        billTypeId: 'internet',
+        billTypeName: 'Internet',
+        year: previousMonthDate.year,
+        month: previousMonthDate.month,
+        amount: 300,
+      ),
+    );
+
+    await tester.pumpWidget(
+      EvApp(
+        dependencies: AppDependencies(
+          personRepository: personRepository,
+          expenseRepository: expenseRepository,
+          billRepository: billRepository,
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    expect(find.text('Biten aylar'), findsOneWidget);
+    expect(find.textContaining('Bana yazilan toplam: 650.00 TL'), findsOneWidget);
+    expect(find.textContaining('1 odenen, 1 odenmeyen'), findsOneWidget);
+
+    await tester.tap(find.textContaining('Bana yazilan toplam: 650.00 TL'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Odenen faturalar'), findsWidgets);
+    expect(find.text('Odenmeyen faturalar'), findsOneWidget);
+    expect(find.text('Masraflar ozeti'), findsOneWidget);
+    expect(find.text('Gecen Ay Market'), findsOneWidget);
+    expect(find.text('Gecen Ay Kahve'), findsOneWidget);
+    expect(find.text('Su'), findsOneWidget);
+    expect(find.text('Internet'), findsOneWidget);
+  });
+
+  testWidgets('Dashboard bill counts ignore unpaid bills of deleted bill types', (
+    WidgetTester tester,
+  ) async {
+    final billRepository = _FakeBillRepository();
+
+    await billRepository.addBillType(BillType.create(name: 'Elektrik'));
+    await billRepository.addBillType(BillType.create(name: 'Su'));
+
+    final billTypes = await billRepository.getBillTypes();
+    final elektrik = billTypes.firstWhere((billType) => billType.name == 'Elektrik');
+    final su = billTypes.firstWhere((billType) => billType.name == 'Su');
+    final now = DateTime.now();
+
+    await billRepository.addMonthlyBill(
+      MonthlyBill.fromBillType(
+        billType: elektrik,
+        year: now.year,
+        month: now.month,
+      ).withDetails(amount: 500),
+    );
+    await billRepository.addMonthlyBill(
+      MonthlyBill.fromBillType(
+        billType: su,
+        year: now.year,
+        month: now.month,
+      ).withDetails(amount: 300).markedPaid(),
+    );
+
+    await billRepository.deleteBillType(elektrik.id);
+
+    await tester.pumpWidget(
+      EvApp(
+        dependencies: AppDependencies(
+          personRepository: _FakePersonRepository(),
+          expenseRepository: _FakeExpenseRepository(),
+          billRepository: billRepository,
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    expect(find.text('Odenen fatura sayisi'), findsOneWidget);
+    expect(find.text('Odenmeyen fatura sayisi'), findsOneWidget);
+    expect(find.text('1'), findsWidgets);
+    expect(find.text('500.00 TL'), findsNothing);
   });
 
   test('Equal split assigns half to me when only my profile exists', () {
@@ -275,14 +403,14 @@ void main() {
     await tester.tap(find.text('Fatura'));
     await tester.pumpAndSettle();
 
-    await tester.tap(find.byTooltip('Fatura türü ekle'));
+    await tester.tap(find.byTooltip('Fatura turu ekle'));
     await tester.pumpAndSettle();
 
     await tester.enterText(find.byType(TextFormField), 'Su');
     await tester.tap(find.text('Kaydet'));
     await tester.pumpAndSettle();
 
-    expect(find.text('Fatura türleri'), findsOneWidget);
+    expect(find.text('Fatura turleri'), findsOneWidget);
     expect(find.text('Su'), findsWidgets);
     expect(find.text('Tutar Bekleniyor'), findsOneWidget);
   });
@@ -311,7 +439,7 @@ void main() {
     await tester.tap(find.text('Fatura'));
     await tester.pumpAndSettle();
 
-    await tester.tap(find.byTooltip('Aylık fatura ekle'));
+    await tester.tap(find.byTooltip('Aylik fatura ekle'));
     await tester.pumpAndSettle();
 
     await tester.enterText(find.byType(TextFormField).first, '450');
@@ -320,15 +448,15 @@ void main() {
 
     expect(find.text('Su'), findsWidgets);
     expect(find.text('450.00 TL'), findsOneWidget);
-    expect(find.text('Ödenmeye Hazır'), findsOneWidget);
+    expect(find.text('Odenmeye Hazir'), findsOneWidget);
 
-    final paidButton = find.widgetWithText(TextButton, 'Ödendi işaretle');
+    final paidButton = find.widgetWithText(TextButton, 'Odendi isaretle');
     await tester.ensureVisible(paidButton);
     await tester.tap(paidButton);
     await tester.pumpAndSettle();
 
-    expect(find.text('Ödendi'), findsOneWidget);
-    expect(find.text('Ödendi işaretle'), findsNothing);
+    expect(find.text('Odendi'), findsOneWidget);
+    expect(find.text('Odendi isaretle'), findsNothing);
 
     final expenses = await expenseRepository.getExpenses();
     expect(expenses, hasLength(1));
@@ -360,7 +488,7 @@ void main() {
 
     expect(find.text('Elektrik'), findsWidgets);
     expect(find.text('Tutar Bekleniyor'), findsOneWidget);
-    expect(find.text('Ödendi işaretle'), findsNothing);
+    expect(find.text('Odendi isaretle'), findsNothing);
     expect(find.text('Tutar gir'), findsOneWidget);
   });
 
@@ -393,10 +521,10 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.text('785.00 TL'), findsOneWidget);
-    expect(find.text('Ödenmeye Hazır'), findsOneWidget);
+    expect(find.text('Odenmeye Hazir'), findsOneWidget);
 
     final autoPaidButton = find.ancestor(
-      of: find.text('Ödendi işaretle'),
+      of: find.text('Odendi isaretle'),
       matching: find.byType(TextButton),
     );
     await tester.drag(find.byType(ListView), const Offset(0, -240));
@@ -413,7 +541,7 @@ void main() {
     await tester.tap(find.byIcon(Icons.dashboard_outlined));
     await tester.pumpAndSettle();
 
-    expect(find.text('Bana yazılan toplam'), findsOneWidget);
+    expect(find.text('Bana yazilan toplam'), findsOneWidget);
     expect(find.text('392.50 TL'), findsWidgets);
     expect(find.text('785.00 TL'), findsWidgets);
   });
@@ -448,7 +576,7 @@ void main() {
     await tester.pumpAndSettle();
 
     final paidButton = find.ancestor(
-      of: find.text('Ödendi işaretle'),
+      of: find.text('Odendi isaretle'),
       matching: find.byType(TextButton),
     );
     await tester.drag(find.byType(ListView), const Offset(0, -240));
@@ -465,7 +593,7 @@ void main() {
     await tester.tap(find.byIcon(Icons.dashboard_outlined));
     await tester.pumpAndSettle();
 
-    expect(find.text('Bana yazılan toplam'), findsOneWidget);
+    expect(find.text('Bana yazilan toplam'), findsOneWidget);
     expect(find.text('400.00 TL'), findsWidgets);
     expect(find.text('800.00 TL'), findsWidgets);
   });
@@ -494,7 +622,7 @@ void main() {
 
     expect(find.text('Su'), findsOneWidget);
 
-    await tester.tap(find.byTooltip('Fatura türünü sil'));
+    await tester.tap(find.byTooltip('Fatura turunu sil'));
     await tester.pumpAndSettle();
 
     expect(find.text('Su'), findsNothing);
@@ -529,12 +657,12 @@ void main() {
     await tester.tap(find.text('Fatura'));
     await tester.pumpAndSettle();
 
-    await tester.tap(find.byTooltip('Fatura türünü sil'));
+    await tester.tap(find.byTooltip('Fatura turunu sil'));
     await tester.pumpAndSettle();
 
     expect(find.text('Elektrik'), findsOneWidget);
     expect(find.text('600.00 TL'), findsOneWidget);
-    expect(find.text('Ödendi'), findsOneWidget);
+    expect(find.text('Odendi'), findsOneWidget);
     expect(find.text('Tutar Bekleniyor'), findsNothing);
   });
 
@@ -568,13 +696,13 @@ void main() {
 
     expect(find.text('300.00 TL'), findsOneWidget);
 
-    await tester.tap(find.byTooltip('Aylık faturayı sil'));
+    await tester.tap(find.byTooltip('Aylik faturayi sil'));
     await tester.pumpAndSettle();
 
     expect(find.text('300.00 TL'), findsNothing);
   });
 
-  testWidgets('Deleting a recurring monthly bill does not recreate it', (
+  testWidgets('Skipping a recurring monthly bill hides it for the month and allows restore', (
     WidgetTester tester,
   ) async {
     final billRepository = _FakeBillRepository();
@@ -596,11 +724,60 @@ void main() {
 
     expect(find.text('Elektrik'), findsWidgets);
 
-    await tester.tap(find.byTooltip('Aylık faturayı sil'));
+    await tester.tap(find.byTooltip('Bu ayi atla'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Bu ay atlandi'), findsOneWidget);
+    expect(find.text('Geri getir'), findsOneWidget);
+
+    await tester.tap(find.text('Geri getir'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Bu ay atlandi'), findsNothing);
+    expect(find.text('Tutar Bekleniyor'), findsOneWidget);
+  });
+
+  testWidgets('Recurring monthly bill appears once for the same month', (
+    WidgetTester tester,
+  ) async {
+    final billRepository = _FakeBillRepository();
+    final now = DateTime.now();
+    final billType = BillType.create(name: 'Elektrik');
+
+    await billRepository.addBillType(billType);
+    await billRepository.addMonthlyBill(
+      MonthlyBill.fromBillType(
+        billType: billType,
+        year: now.year,
+        month: now.month,
+      ),
+    );
+    await billRepository.addMonthlyBill(
+      MonthlyBill.create(
+        billTypeId: billType.id,
+        billTypeName: billType.name,
+        year: now.year,
+        month: now.month,
+        amount: 650,
+      ),
+    );
+
+    await tester.pumpWidget(
+      EvApp(
+        dependencies: AppDependencies(
+          personRepository: _FakePersonRepository(),
+          expenseRepository: _FakeExpenseRepository(),
+          billRepository: billRepository,
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.text('Fatura'));
     await tester.pumpAndSettle();
 
     expect(find.text('Elektrik'), findsOneWidget);
-    expect(find.text('Tutar Bekleniyor'), findsNothing);
+    expect(find.text('650.00 TL'), findsOneWidget);
   });
 
   testWidgets('Deleting a paid monthly bill removes its generated expense', (
@@ -649,7 +826,7 @@ void main() {
 
     expect(find.text('800.00 TL'), findsOneWidget);
 
-    await tester.tap(find.byTooltip('Aylık faturayı sil'));
+    await tester.tap(find.byTooltip('Aylik faturayi sil'));
     await tester.pumpAndSettle();
 
     expect(await expenseRepository.getExpenses(), isEmpty);
@@ -724,10 +901,10 @@ void main() {
     await tester.tap(find.text('Fatura'));
     await tester.pumpAndSettle();
 
-    await tester.tap(find.byTooltip('Fatura türü ekle'));
+    await tester.tap(find.byTooltip('Fatura turu ekle'));
     await tester.pumpAndSettle();
     await tester.enterText(
-      find.widgetWithText(TextFormField, 'Fatura adı'),
+      find.widgetWithText(TextFormField, 'Fatura adi'),
       'Elektrik',
     );
     await tester.tap(find.text('Kaydet'));
@@ -740,7 +917,7 @@ void main() {
     await tester.pumpAndSettle();
 
     final electricityPaidButton = find.ancestor(
-      of: find.text('Ödendi işaretle').first,
+      of: find.text('Odendi isaretle').first,
       matching: find.byType(TextButton),
     );
     await tester.drag(find.byType(ListView), const Offset(0, -240));
@@ -764,13 +941,13 @@ void main() {
     await tester.tap(find.text('Fatura'));
     await tester.pumpAndSettle();
 
-    await tester.tap(find.byTooltip('Fatura türü ekle'));
+    await tester.tap(find.byTooltip('Fatura turu ekle'));
     await tester.pumpAndSettle();
     await tester.enterText(
-      find.widgetWithText(TextFormField, 'Fatura adı'),
+      find.widgetWithText(TextFormField, 'Fatura adi'),
       'Netflix',
     );
-    await tester.tap(find.text('Kişisel'));
+    await tester.tap(find.text('Kisisel'));
     await tester.pumpAndSettle();
     await tester.tap(find.text('Sabit tutar'));
     await tester.pumpAndSettle();
@@ -779,7 +956,7 @@ void main() {
     await tester.pumpAndSettle();
 
     final netflixPaidButton = find.ancestor(
-      of: find.text('Ödendi işaretle').last,
+      of: find.text('Odendi isaretle').last,
       matching: find.byType(TextButton),
     );
     await tester.drag(find.byType(ListView), const Offset(0, -240));
@@ -804,7 +981,7 @@ void main() {
     await tester.pumpAndSettle();
     await tester.drag(find.byType(ListView), const Offset(0, -240));
     await tester.pumpAndSettle();
-    await tester.tap(find.byTooltip('Aylık faturayı sil').first);
+    await tester.tap(find.byTooltip('Aylik faturayi sil').first);
     await tester.pumpAndSettle();
 
     expenses = await expenseRepository.getExpenses();
@@ -1273,7 +1450,33 @@ class _FakeBillRepository implements BillRepository {
 
   @override
   Future<void> addMonthlyBill(MonthlyBill monthlyBill) async {
-    _monthlyBills.add(monthlyBill);
+    final existingIndex = _monthlyBills.indexWhere(
+      (existingMonthlyBill) =>
+          !existingMonthlyBill.isDeleted &&
+          existingMonthlyBill.id != monthlyBill.id &&
+          existingMonthlyBill.billTypeId == monthlyBill.billTypeId &&
+          existingMonthlyBill.year == monthlyBill.year &&
+          existingMonthlyBill.month == monthlyBill.month,
+    );
+
+    if (existingIndex == -1) {
+      _monthlyBills.add(monthlyBill);
+      return;
+    }
+
+    final existingMonthlyBill = _monthlyBills[existingIndex];
+    _monthlyBills[existingIndex] = existingMonthlyBill.copyWith(
+      billTypeName: monthlyBill.billTypeName,
+      amount: monthlyBill.amount ?? existingMonthlyBill.amount,
+      dueDate: monthlyBill.dueDate ?? existingMonthlyBill.dueDate,
+      note: monthlyBill.note ?? existingMonthlyBill.note,
+      status: monthlyBill.status,
+      paidAt: monthlyBill.paidAt ?? existingMonthlyBill.paidAt,
+      generatedExpenseId:
+          monthlyBill.generatedExpenseId ?? existingMonthlyBill.generatedExpenseId,
+      updatedAt: monthlyBill.updatedAt,
+      syncStatus: monthlyBill.syncStatus,
+    );
   }
 
   @override
@@ -1290,6 +1493,32 @@ class _FakeBillRepository implements BillRepository {
   }
 
   @override
+  Future<void> skipMonthlyBill(String monthlyBillId) async {
+    final index = _monthlyBills.indexWhere(
+      (monthlyBill) => monthlyBill.id == monthlyBillId,
+    );
+
+    if (index == -1) {
+      return;
+    }
+
+    _monthlyBills[index] = _monthlyBills[index].markedSkipped();
+  }
+
+  @override
+  Future<void> restoreMonthlyBill(String monthlyBillId) async {
+    final index = _monthlyBills.indexWhere(
+      (monthlyBill) => monthlyBill.id == monthlyBillId,
+    );
+
+    if (index == -1) {
+      return;
+    }
+
+    _monthlyBills[index] = _monthlyBills[index].restoredFromSkip();
+  }
+
+  @override
   Future<List<BillType>> getBillTypes() async {
     return _billTypes.where((billType) => !billType.isDeleted).toList();
   }
@@ -1301,14 +1530,14 @@ class _FakeBillRepository implements BillRepository {
 
   @override
   Future<List<MonthlyBill>> getMonthlyBills() async {
-    return _monthlyBills
-        .where((monthlyBill) => !monthlyBill.isDeleted)
-        .toList();
+    return _dedupeMonthlyBills(
+      _monthlyBills.where((monthlyBill) => !monthlyBill.isDeleted).toList(),
+    );
   }
 
   @override
   Future<List<MonthlyBill>> getAllMonthlyBills() async {
-    return List<MonthlyBill>.from(_monthlyBills);
+    return _dedupeMonthlyBills(List<MonthlyBill>.from(_monthlyBills));
   }
 
   @override
@@ -1321,6 +1550,7 @@ class _FakeBillRepository implements BillRepository {
     )) {
       final alreadyExists = _monthlyBills.any(
         (monthlyBill) =>
+            !monthlyBill.isDeleted &&
             monthlyBill.billTypeId == billType.id &&
             monthlyBill.year == year &&
             monthlyBill.month == month,
@@ -1352,6 +1582,23 @@ class _FakeBillRepository implements BillRepository {
     _monthlyBills[index] = _monthlyBills[index].markedPaid(
       generatedExpenseId: generatedExpenseId,
     );
+  }
+
+  List<MonthlyBill> _dedupeMonthlyBills(List<MonthlyBill> monthlyBills) {
+    final byKey = <String, MonthlyBill>{};
+
+    for (final monthlyBill in monthlyBills) {
+      final key =
+          '${monthlyBill.billTypeId}-${monthlyBill.year}-${monthlyBill.month}';
+      final existingMonthlyBill = byKey[key];
+
+      if (existingMonthlyBill == null ||
+          monthlyBill.updatedAt.isAfter(existingMonthlyBill.updatedAt)) {
+        byKey[key] = monthlyBill;
+      }
+    }
+
+    return byKey.values.toList();
   }
 }
 

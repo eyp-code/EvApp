@@ -12,9 +12,9 @@ Mevcut calisan uygulama local-first kararina uygun ilerliyor:
 
 Siradaki mimari adim:
 
-- Shopping listte duzenleme akisini mevcut repository yapisini bozmadan eklemek.
-- Kategori filtresini presentation katmaninda tutup veri katmanini gereksiz buyutmemek.
-- Sonraki yeni modulu da ayni pattern ile `HouseholdTask` repository uzerinden kurmak.
+- Dashboard icin secilen aya gore hesap yapan bir rapor akisi eklemek.
+- Biten ay ozetlerini repository uzerinden derive eden bir monthly summary katmani tasarlamak.
+- Sonraki yeni modulleri de ayni pattern ile repository uzerinden kurmak.
 
 ## Mimari Kararı
 
@@ -142,7 +142,6 @@ Uygulamanın temel veri modellerini içerir.
 - `BudgetGoal`
 - `ShoppingItem`
 - `HouseholdTask`
-- `DebtEntry`
 
 Bu modeller uygulamanın kalbidir.
 
@@ -487,5 +486,19 @@ Page → Provider/Controller → Repository → DataSource → Hive
 ```
 
 Bu kurala uyulursa uygulama büyüdüğünde yönetilebilir kalır.
-> Güncel Dashboard hesaplama dili: Ana takip metriği `Bana yazılan toplam`dır. Bu değer ortak masraflardaki benim payım + sadece bana ait masraflardan oluşur. `Ortak masraflar`, `Benim ortak payım`, `Sadece benim masraflarım` ve `Bu ay girilen toplam` ayrı gösterilir. Borç/alacak veya net borç hesabı yapılmaz.
-> Güncel Dashboard hesaplama dili: Ana takip metriği `Bana yazılan toplam`dır. Bu değer ortak masraflardaki benim payım + sadece bana ait masraflardan oluşur. `Ortak masraflar`, `Benim ortak payım`, `Sadece benim masraflarım` ve `Bu ay girilen toplam` ayrı gösterilir. Borç/alacak veya net borç hesabı yapılmaz.
+
+Dashboard icin aylik arsiv de ayni kurala uymalidir:
+
+```text
+Dashboard Page
+   →
+Monthly Summary Provider/Controller
+   →
+Monthly Summary Repository/Service
+   →
+ExpenseRepository + BillRepository
+```
+
+Ilk surumde aylik ozet kaydi ayri box'a yazilmak zorunda degildir; masraf ve fatura verilerinden secilen ay icin derive edilmesi daha guvenli ve daha az veri tekrarina yol acar.
+> Güncel Dashboard hesaplama dili: Ana takip metriği `Bana yazılan toplam`dır. Bu değer ortak masraflardaki benim payım + sadece bana ait masraflardan oluşur. `Ortak masraflar`, `Benim ortak payım`, `Sadece benim masraflarım` ve `Bu ay girilen toplam` ayrı gösterilir. Settlement hesabı yapılmaz.
+> Güncel Dashboard hesaplama dili: Ana takip metriği `Bana yazılan toplam`dır. Bu değer ortak masraflardaki benim payım + sadece bana ait masraflardan oluşur. `Ortak masraflar`, `Benim ortak payım`, `Sadece benim masraflarım` ve `Bu ay girilen toplam` ayrı gösterilir. Settlement hesabı yapılmaz.

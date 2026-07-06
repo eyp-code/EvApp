@@ -124,6 +124,7 @@ class MonthlyBill {
   final DateTime? lastSyncedAt;
 
   bool get isPaid => status == BillStatus.paid;
+  bool get isSkipped => status == BillStatus.skipped;
 
   MonthlyBill copyWith({
     String? billTypeId,
@@ -171,6 +172,22 @@ class MonthlyBill {
       paidAt: now,
       generatedExpenseId: generatedExpenseId,
       updatedAt: now,
+      syncStatus: SyncStatus.pendingUpdate,
+    );
+  }
+
+  MonthlyBill markedSkipped() {
+    return copyWith(
+      status: BillStatus.skipped,
+      updatedAt: DateTime.now(),
+      syncStatus: SyncStatus.pendingUpdate,
+    );
+  }
+
+  MonthlyBill restoredFromSkip() {
+    return copyWith(
+      status: amount == null ? BillStatus.amountWaiting : BillStatus.readyToPay,
+      updatedAt: DateTime.now(),
       syncStatus: SyncStatus.pendingUpdate,
     );
   }

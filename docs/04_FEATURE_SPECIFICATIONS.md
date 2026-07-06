@@ -4,7 +4,7 @@
 
 Masraf ve fatura sistemi icin bugunku calisan kararlar:
 
-- Borc/alacak ve net borc hesabi yapilmaz.
+- Settlement hesabi yapilmaz.
 - Dashboard ana metrigi `Bana yazilan toplam`dir.
 - `Bana yazilan toplam` = ortak masraflardaki benim payim + sadece bana ait masraflar.
 - Aktif split secenekleri:
@@ -37,8 +37,9 @@ overdue: Gecikti
 
 Siradaki ozellik:
 
-- Shopping list icin urun duzenleme.
-- Sonra kategori filtresi.
+- Dashboard icin biten ay ozet arsivi.
+- Arsiv kartina tiklayinca acilan aylik rapor detayi.
+- Sonra shopping list duzenleme ve kategori filtresi.
 
 Beklenen yakin akisi:
 
@@ -66,7 +67,7 @@ Kullanıcı uygulamayı açtığında evin genel finans ve görev durumunu hızl
 - Benim kişisel harcamam
 - Benim toplam giderim
 - Ev arkadaşımın payı
-- Net borç durumu
+- Bu ay girilen toplam
 
 Örnek:
 
@@ -76,7 +77,28 @@ Toplam Ev Masrafı: 24.300 TL
 Benim Payım: 12.150 TL
 Benim Kişisel Harcamam: 2.400 TL
 Benim Toplam Giderim: 14.550 TL
+Bu Ay Girilen Toplam: 26.700 TL
 ```
+
+### Biten Ay Özet Arşivi
+
+Ana sayfada aktif ayın özeti üstte kalır.
+
+Ay bittikten sonra o aya ait özet kartı aşağıdaki arşive eklenir:
+
+```text
+Haziran 2026
+Bana yazılan toplam: 14.550 TL
+Ödenen faturalar: 5
+Bekleyen faturalar: 1
+```
+
+Karta tıklanınca şu birleşik rapor açılır:
+
+- Ana sayfadaki finans özet kartları
+- O aya ait masraf toplamları
+- O aya ait fatura durumu
+- Gerekirse kategori kırılımı
 
 ### Fatura Özeti
 
@@ -128,7 +150,6 @@ Harcama sadece kullanıcıya aittir.
 Toplam: 300 TL
 Benim payım: 300 TL
 Ev toplamı: 0 TL
-Borç: Yok
 ```
 
 ### Sadece Ev Arkadaşımın
@@ -191,12 +212,7 @@ Paylaşım: Eşit
 Benim payım: 10.000 TL
 Ev arkadaşımın payı: 10.000 TL
 
-Net durum:
-
-```text
-Ev arkadaşım bana 500 TL borçlu.
-Ben ev arkadaşıma 300 TL borçluyum.
-Net: Ev arkadaşım bana 200 TL borçlu.
+Bu kayıt aylık raporda ortak masraf ve kişi paylarıyla görünür.
 ````
 
 # 4. Bill System
@@ -555,6 +571,13 @@ Kullanıcı uygulama ayarlarını yönetebilmelidir.
 - Faturalar toplamı
 - Abonelik toplamı
 - Kategori bazlı harcama
+- Bekleyen / ödenen fatura sayısı
+
+İlk rapor akışı dashboard ile birleşik düşünülmelidir:
+
+- Ana sayfada aktif ay özeti
+- Aşağıda biten ayların arşiv kartları
+- Karttan açılan aylık detay raporu
 
 ## Gelecek Özellikler
 
@@ -599,5 +622,5 @@ Import işleminden önce mevcut verinin yedeği alınmalıdır.
 ## Tarih Değişirse
 
 Fatura ve bütçe hesapları cihaz tarihine göre değil, kayıt tarihine göre yapılmalıdır.
-> Güncel Dashboard hesaplama dili: Ana takip metriği `Bana yazılan toplam`dır. Bu değer ortak masraflardaki benim payım + sadece bana ait masraflardan oluşur. `Ortak masraflar`, `Benim ortak payım`, `Sadece benim masraflarım` ve `Bu ay girilen toplam` ayrı gösterilir. Borç/alacak veya net borç hesabı yapılmaz.
-> Güncel Dashboard hesaplama dili: Ana takip metriği `Bana yazılan toplam`dır. Bu değer ortak masraflardaki benim payım + sadece bana ait masraflardan oluşur. `Ortak masraflar`, `Benim ortak payım`, `Sadece benim masraflarım` ve `Bu ay girilen toplam` ayrı gösterilir. Borç/alacak veya net borç hesabı yapılmaz.
+> Güncel Dashboard hesaplama dili: Ana takip metriği `Bana yazılan toplam`dır. Bu değer ortak masraflardaki benim payım + sadece bana ait masraflardan oluşur. `Ortak masraflar`, `Benim ortak payım`, `Sadece benim masraflarım` ve `Bu ay girilen toplam` ayrı gösterilir. Settlement hesabı yapılmaz.
+> Güncel Dashboard hesaplama dili: Ana takip metriği `Bana yazılan toplam`dır. Bu değer ortak masraflardaki benim payım + sadece bana ait masraflardan oluşur. `Ortak masraflar`, `Benim ortak payım`, `Sadece benim masraflarım` ve `Bu ay girilen toplam` ayrı gösterilir. Settlement hesabı yapılmaz.

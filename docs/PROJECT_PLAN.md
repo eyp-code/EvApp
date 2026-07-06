@@ -26,10 +26,11 @@ Bu noktada calisan MVP parcasi:
 
 Guncel urun kararlari:
 
-- Borc/alacak veya net borc hesabi yok.
+- Settlement hesabi yok.
 - Ana takip metrigi `Bana yazilan toplam`.
 - Ortak/esit harcamalar ve ev faturalari ikiye bolunur.
 - Kisisel masraflar ve kisisel faturalar tam tutari kullaniciya yazar.
+- Ana sayfa aktif ayi gosterir; biten aylar asagida tiklanabilir ozet rapor kartlari olarak birikir.
 - AI proje icinde commit atmaz; commit karari ve uygulamasi proje sahibine aittir.
 - AI, istenirse sadece commit mesaji ve komut onerisi verir.
 
@@ -45,8 +46,9 @@ flutter test
 
 Siradaki onerilen adim:
 
-- Shopping list icin urun duzenleme ve kategori filtresi.
-- Sonra Household Tasks MVP'ye gecmek.
+- Dashboard icin aylik ozet arsivi akisini eklemek.
+- Biten ay kartina tiklaninca acilan birlesik ay raporunu tanimlamak.
+- Sonra shopping list duzenleme ve kategori filtresine donmek.
 
 ## Tamamlanan Gelistirme Sureci - JSON Backup / Restore
 
@@ -81,7 +83,7 @@ Kabul kriterleri:
 
 Bu dosya EvApp projesinin ana planıdır. Diğer `.md` dosyaları bu planın detaylarını içerir.
 
-> Güncel karar: EvApp borç/alacak takibi yapmayacak. Ortak masraf paylaşımı, benim payım, ev arkadaşının payı ve toplam ev masrafı hesaplanacak; ancak "kim kime borçlu" veya "net borç" ekranı olmayacak. `paidByPersonId` sadece kayıt ve raporlama amacıyla tutulacak.
+> Güncel karar: EvApp pay takibi yapacak, settlement takibi yapmayacak. `paidByPersonId` sadece kayıt ve raporlama amacıyla tutulacak. Dashboard aktif ayı gösterecek; biten aylar da ana sayfa altında biriken aylık özet raporları olarak açılabilecek.
 
 ---
 
@@ -94,7 +96,6 @@ Uygulamanın temel sorusu:
 ```text
 Evde toplam ne harcandı?
 Benim payıma ne düştü?
-Kim kime ne kadar borçlu?
 Hangi faturalar unutuldu?
 Bu ay bütçeyi aştım mı?
 ```
@@ -147,7 +148,7 @@ eklenebilir.
 - Benim payım
 - Kişisel harcamam
 - Ev arkadaşımın payı
-- Net borç durumu
+- Biten ay Ã¶zet arÅŸivi
 - Bekleyen faturalar
 - Girilmemiş faturalar
 - Yaklaşan abonelikler
@@ -170,7 +171,6 @@ eklenebilir.
 - Eşit bölme
 - Özel oranla bölme
 - Özel tutarla bölme
-- Kim kime borçlu hesaplama
 
 ### Fatura Sistemi
 
@@ -330,7 +330,6 @@ Market: 1200 TL
 Paylaşım: Eşit
 Benim payım: 600 TL
 Ev arkadaşımın payı: 600 TL
-Ev arkadaşım bana 600 TL borçlu
 ```
 
 ---
@@ -396,7 +395,6 @@ Person sistemi
 Masraf ekleme
 Ortak harcama bölme
 Benim payım hesaplama
-Borç hesaplama
 Fatura türü oluşturma
 Aylık fatura kaydı
 Abonelik ekleme
@@ -469,5 +467,5 @@ NestJS + PostgreSQL + Prisma
 EvApp başlangıçta kişisel kullanım için local çalışan bir uygulama olacak.
 
 Ama mimari doğru kurulursa ileride Firebase veya özel backend ile gerçek zamanlı, çok cihazlı ve ev arkadaşlı bir ürüne dönüşebilecek.
-> Güncel hesaplama kararı: `Benim payım` yalnızca ortak bölünen masraflardan kullanıcıya düşen tutarı gösterir. `Kişisel harcamam`, ortak masraflardaki kullanıcı payı + sadece kullanıcıya ait masrafların toplamıdır. `paidByPersonId` bu iki hesabı borç/alacak hesabına dönüştürmez.
-> Güncel Dashboard hesaplama dili: Ana takip metriği `Bana yazılan toplam`dır. Bu değer ortak masraflardaki benim payım + sadece bana ait masraflardan oluşur. `Ortak masraflar`, `Benim ortak payım`, `Sadece benim masraflarım` ve `Bu ay girilen toplam` ayrı gösterilir. Borç/alacak veya net borç hesabı yapılmaz.
+> Güncel hesaplama kararı: `Benim payım` yalnızca ortak bölünen masraflardan kullanıcıya düşen tutarı gösterir. `Kişisel harcamam`, ortak masraflardaki kullanıcı payı + sadece kullanıcıya ait masrafların toplamıdır. `paidByPersonId` bu iki hesabı settlement hesabına dönüştürmez.
+> Güncel Dashboard hesaplama dili: Ana takip metriği `Bana yazılan toplam`dır. Bu değer ortak masraflardaki benim payım + sadece bana ait masraflardan oluşur. `Ortak masraflar`, `Benim ortak payım`, `Sadece benim masraflarım` ve `Bu ay girilen toplam` ayrı gösterilir. Settlement hesabı yapılmaz.
