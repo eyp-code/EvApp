@@ -14,6 +14,8 @@ import 'package:ev_masraflari_app/features/people/domain/models/person.dart';
 import 'package:ev_masraflari_app/features/people/domain/repositories/person_repository.dart';
 import 'package:ev_masraflari_app/features/shopping/domain/models/shopping_item.dart';
 import 'package:ev_masraflari_app/features/shopping/domain/repositories/shopping_repository.dart';
+import 'package:ev_masraflari_app/features/tasks/domain/models/task_item.dart';
+import 'package:ev_masraflari_app/features/tasks/domain/repositories/task_repository.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
@@ -1391,6 +1393,104 @@ void main() {
     expect(find.text('Sut'), findsNothing);
     expect(find.text('Cop Torbasi'), findsOneWidget);
   });
+
+  testWidgets('Tasks page adds and completes a task', (
+    WidgetTester tester,
+  ) async {
+    final taskRepository = _FakeTaskRepository();
+
+    await tester.pumpWidget(
+      EvApp(
+        dependencies: AppDependencies(
+          personRepository: _FakePersonRepository.withRoommate(),
+          expenseRepository: _FakeExpenseRepository(),
+          billRepository: _FakeBillRepository(),
+          taskRepository: taskRepository,
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.text('Gorev'));
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.text('Normal gorev ekle'));
+    await tester.pumpAndSettle();
+
+    await tester.enterText(find.widgetWithText(TextField, 'Baslik'), 'Cop cikar');
+    await tester.enterText(
+      find.widgetWithText(TextField, 'Aciklama'),
+      'Aksam 20:00 once',
+    );
+    await tester.tap(find.text('Kaydet'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Cop cikar'), findsOneWidget);
+    expect(find.text('Aksam 20:00 once'), findsOneWidget);
+    expect(find.text('Bekliyor'), findsOneWidget);
+
+    await tester.tap(find.byType(Checkbox).first);
+    await tester.pumpAndSettle();
+
+    expect(find.text('Tamamlandi'), findsOneWidget);
+    final tasks = await taskRepository.getTasks();
+    expect(tasks.single.isCompleted, isTrue);
+  });
+
+  testWidgets('Tasks page advances a recurring task instead of duplicating it', (
+    WidgetTester tester,
+  ) async {
+    final taskRepository = _FakeTaskRepository();
+
+    await tester.pumpWidget(
+      EvApp(
+        dependencies: AppDependencies(
+          personRepository: _FakePersonRepository(),
+          expenseRepository: _FakeExpenseRepository(),
+          billRepository: _FakeBillRepository(),
+          taskRepository: taskRepository,
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.text('Gorev'));
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.text('Rutin'));
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.text('Rutin gorev ekle'));
+    await tester.pumpAndSettle();
+
+    await tester.enterText(
+      find.widgetWithText(TextField, 'Baslik'),
+      'Nevresim degistir',
+    );
+    await tester.tap(find.text('Ilk bildirim gunu'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('15'));
+    await tester.tap(find.text('OK'));
+    await tester.pumpAndSettle();
+    await tester.enterText(
+      find.widgetWithText(TextField, 'Tekrar miktari'),
+      '2',
+    );
+    await tester.tap(find.text('Kaydet'));
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.byType(Checkbox).first);
+    await tester.pumpAndSettle();
+
+    final tasks = await taskRepository.getTasks();
+    expect(tasks, hasLength(1));
+    expect(tasks.single.isCompleted, isFalse);
+    expect(tasks.single.lastCompletedAt, isNotNull);
+    expect(tasks.single.dueDate, isNotNull);
+    expect(find.textContaining('Tekrar: her 2 hafta'), findsWidgets);
+    expect(find.textContaining('Son yapilma:'), findsOneWidget);
+    expect(find.textContaining('Siradaki bildirim:'), findsOneWidget);
+  });
 }
 
 class _FakePersonRepository implements PersonRepository {
@@ -1724,5 +1824,49 @@ class _FakeShoppingRepository implements ShoppingRepository {
     }
 
     _items[index] = _items[index].toggledPurchased();
+  }
+}
+
+class _FakeTaskRepository implements TaskRepository {
+  final List<TaskItem> _tasks = [];
+
+  @override
+  Future<void> addTask(TaskItem task) async {
+    _tasks.add(task);
+  }
+
+  @override
+  Future<void> deleteTask(String taskId) async {
+    final index = _tasks.indexWhere((task) => task.id == taskId);
+    if (index == -1) {
+      return;
+    }
+
+    _tasks[index] = _tasks[index].markedDeleted();
+  }
+
+  @override
+  Future<List<TaskItem>> getTasks() async {
+    return _tasks.where((task) => !task.isDeleted).toList();
+  }
+
+  @override
+  Future<void> toggleCompleted(String taskId) async {
+    final index = _tasks.indexWhere((task) => task.id == taskId);
+    if (index == -1) {
+      return;
+    }
+
+    _tasks[index] = _tasks[index].toggledCompleted();
+  }
+
+  @override
+  Future<void> updateTask(TaskItem task) async {
+    final index = _tasks.indexWhere((item) => item.id == task.id);
+    if (index == -1) {
+      return;
+    }
+
+    _tasks[index] = task;
   }
 }

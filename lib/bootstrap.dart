@@ -22,6 +22,9 @@ import 'features/people/domain/repositories/person_repository.dart';
 import 'features/shopping/data/data_sources/shopping_local_data_source.dart';
 import 'features/shopping/data/repositories/local_shopping_repository.dart';
 import 'features/shopping/domain/repositories/shopping_repository.dart';
+import 'features/tasks/data/data_sources/task_local_data_source.dart';
+import 'features/tasks/data/repositories/local_task_repository.dart';
+import 'features/tasks/domain/repositories/task_repository.dart';
 
 class AppDependencies {
   const AppDependencies({
@@ -29,6 +32,7 @@ class AppDependencies {
     required this.expenseRepository,
     required this.billRepository,
     this.shoppingRepository,
+    this.taskRepository,
     this.backupService,
     this.fileBackupGateway,
   });
@@ -37,6 +41,7 @@ class AppDependencies {
   final ExpenseRepository expenseRepository;
   final BillRepository billRepository;
   final ShoppingRepository? shoppingRepository;
+  final TaskRepository? taskRepository;
   final BackupService? backupService;
   final FileBackupGateway? fileBackupGateway;
 }
@@ -49,6 +54,7 @@ Future<AppDependencies> bootstrapApp() async {
   final billTypesBox = await Hive.openBox<Map>(HiveBoxNames.billTypes);
   final monthlyBillsBox = await Hive.openBox<Map>(HiveBoxNames.monthlyBills);
   final shoppingItemsBox = await Hive.openBox<Map>(HiveBoxNames.shoppingItems);
+  final tasksBox = await Hive.openBox<Map>(HiveBoxNames.tasks);
 
   final personDataSource = PersonLocalDataSource(personsBox);
   final personRepository = LocalPersonRepository(personDataSource);
@@ -61,6 +67,8 @@ Future<AppDependencies> bootstrapApp() async {
   final billRepository = LocalBillRepository(billDataSource);
   final shoppingDataSource = ShoppingLocalDataSource(shoppingItemsBox);
   final shoppingRepository = LocalShoppingRepository(shoppingDataSource);
+  final taskDataSource = TaskLocalDataSource(tasksBox);
+  final taskRepository = LocalTaskRepository(taskDataSource);
   final backupService = BackupService(
     _LocalBackupStore(
       personRepository: personRepository,
@@ -77,6 +85,7 @@ Future<AppDependencies> bootstrapApp() async {
     expenseRepository: expenseRepository,
     billRepository: billRepository,
     shoppingRepository: shoppingRepository,
+    taskRepository: taskRepository,
     backupService: backupService,
     fileBackupGateway: FileBackupGateway(),
   );

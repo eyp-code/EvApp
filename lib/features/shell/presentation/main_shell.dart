@@ -15,6 +15,8 @@ import '../../settings/presentation/pages/settings_page.dart';
 import '../../shopping/domain/models/shopping_item.dart';
 import '../../shopping/domain/repositories/shopping_repository.dart';
 import '../../shopping/presentation/pages/shopping_page.dart';
+import '../../tasks/domain/models/task_item.dart';
+import '../../tasks/domain/repositories/task_repository.dart';
 import '../../tasks/presentation/pages/tasks_page.dart';
 
 class MainShell extends StatefulWidget {
@@ -63,7 +65,11 @@ class _MainShellState extends State<MainShell> {
             widget.dependencies.shoppingRepository ??
             _EmptyShoppingRepository(),
       ),
-      const TasksPage(key: ValueKey('tasks')),
+      TasksPage(
+        key: ValueKey('tasks-$_dataRevision'),
+        taskRepository: widget.dependencies.taskRepository ?? _EmptyTaskRepository(),
+        personRepository: widget.dependencies.personRepository,
+      ),
       SettingsPage(
         key: ValueKey('settings-$_dataRevision'),
         personRepository: widget.dependencies.personRepository,
@@ -153,4 +159,21 @@ class _EmptyShoppingRepository implements ShoppingRepository {
 
   @override
   Future<void> togglePurchased(String itemId) async {}
+}
+
+class _EmptyTaskRepository implements TaskRepository {
+  @override
+  Future<void> addTask(TaskItem task) async {}
+
+  @override
+  Future<void> deleteTask(String taskId) async {}
+
+  @override
+  Future<List<TaskItem>> getTasks() async => const [];
+
+  @override
+  Future<void> toggleCompleted(String taskId) async {}
+
+  @override
+  Future<void> updateTask(TaskItem task) async {}
 }
