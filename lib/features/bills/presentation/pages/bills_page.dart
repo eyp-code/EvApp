@@ -1,7 +1,5 @@
 import 'package:flutter/material.dart';
 
-import '../../../expenses/domain/models/expense.dart';
-import '../../../expenses/domain/models/split_type.dart';
 import '../../../expenses/domain/repositories/expense_repository.dart';
 import '../../../people/domain/repositories/person_repository.dart';
 import '../../domain/models/bill_category.dart';
@@ -130,42 +128,8 @@ class _BillsPageState extends State<BillsPage> {
       return;
     }
 
-    if (monthlyBill.generatedExpenseId != null) {
-      await widget.billRepository.markMonthlyBillPaid(
-        monthlyBillId: monthlyBill.id,
-        generatedExpenseId: monthlyBill.generatedExpenseId,
-      );
-      await _refresh();
-      return;
-    }
-
-    final billTypes = await widget.billRepository.getBillTypes();
-    final billType = _findBillType(billTypes, monthlyBill.billTypeId);
-    final persons = await widget.personRepository.getPersons();
-    final me = persons.where((person) => person.isMe).firstOrNull;
-
-    if (billType == null || me == null) {
-      return;
-    }
-
-    final isOnlyMe = billType.category == BillCategory.personal;
-    final participantIds = isOnlyMe
-        ? [me.id]
-        : persons.map((person) => person.id).toList();
-    final expense = Expense.create(
-      title: billType.name,
-      category: 'Fatura',
-      totalAmount: monthlyBill.amount!,
-      spentAt: DateTime.now(),
-      paidByPersonId: me.id,
-      splitType: isOnlyMe ? SplitType.onlyMe : SplitType.equal,
-      participantIds: participantIds,
-    );
-
-    await widget.expenseRepository.addExpense(expense);
     await widget.billRepository.markMonthlyBillPaid(
       monthlyBillId: monthlyBill.id,
-      generatedExpenseId: expense.id,
     );
     await _refresh();
   }

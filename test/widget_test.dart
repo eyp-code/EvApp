@@ -190,6 +190,78 @@ void main() {
     expect(find.byTooltip('Masraf ekle'), findsWidgets);
   });
 
+  testWidgets('Expenses page saves the selected expense date', (
+    WidgetTester tester,
+  ) async {
+    final expenseRepository = _FakeExpenseRepository();
+
+    await tester.pumpWidget(
+      EvApp(
+        dependencies: AppDependencies(
+          personRepository: _FakePersonRepository(),
+          expenseRepository: expenseRepository,
+          billRepository: _FakeBillRepository(),
+        ),
+      ),
+    );
+    await tester.pump();
+
+    await tester.tap(find.text('Masraf'));
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.byTooltip('Masraf ekle').first);
+    await tester.pumpAndSettle();
+
+    await tester.enterText(find.widgetWithText(TextField, 'Baslik'), 'Market');
+    await tester.enterText(find.widgetWithText(TextField, 'Tutar'), '1200');
+
+    await tester.tap(find.text('Tarih'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('15'));
+    await tester.tap(find.text('OK'));
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.text('Kaydet'));
+    await tester.pumpAndSettle();
+
+    final expenses = await expenseRepository.getExpenses();
+    expect(expenses, hasLength(1));
+    expect(expenses.first.spentAt.day, 15);
+  });
+
+  testWidgets('Expenses page hides legacy bill-generated expense records', (
+    WidgetTester tester,
+  ) async {
+    final expenseRepository = _FakeExpenseRepository();
+    await expenseRepository.addExpense(
+      Expense.create(
+        title: 'Elektrik',
+        category: 'Fatura',
+        totalAmount: 800,
+        spentAt: DateTime.now(),
+        paidByPersonId: 'me',
+        splitType: SplitType.onlyMe,
+        participantIds: ['me'],
+      ),
+    );
+
+    await tester.pumpWidget(
+      EvApp(
+        dependencies: AppDependencies(
+          personRepository: _FakePersonRepository(),
+          expenseRepository: expenseRepository,
+          billRepository: _FakeBillRepository(),
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.text('Masraf'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Elektrik'), findsNothing);
+  });
+
   testWidgets('Dashboard shows understandable expense summary', (
     WidgetTester tester,
   ) async {
@@ -459,11 +531,7 @@ void main() {
     expect(find.text('Odendi isaretle'), findsNothing);
 
     final expenses = await expenseRepository.getExpenses();
-    expect(expenses, hasLength(1));
-    expect(expenses.single.title, 'Su');
-    expect(expenses.single.totalAmount, 450);
-    final me = await personRepository.getMe();
-    expect(expenses.single.shareFor(me!.id), 225);
+    expect(expenses, isEmpty);
   });
 
   testWidgets('Bills page auto creates recurring bills waiting for amount', (
@@ -534,9 +602,7 @@ void main() {
     await tester.pumpAndSettle();
 
     final expenses = await expenseRepository.getExpenses();
-    expect(expenses, hasLength(1));
-    expect(expenses.single.title, 'Elektrik');
-    expect(expenses.single.totalAmount, 785);
+    expect(expenses, isEmpty);
 
     await tester.tap(find.byIcon(Icons.dashboard_outlined));
     await tester.pumpAndSettle();
@@ -586,9 +652,7 @@ void main() {
     await tester.pumpAndSettle();
 
     final expenses = await expenseRepository.getExpenses();
-    expect(expenses, hasLength(1));
-    expect(expenses.single.totalAmount, 800);
-    expect(expenses.single.shares, hasLength(2));
+    expect(expenses, isEmpty);
 
     await tester.tap(find.byIcon(Icons.dashboard_outlined));
     await tester.pumpAndSettle();
@@ -927,11 +991,7 @@ void main() {
     await tester.pumpAndSettle();
 
     expenses = await expenseRepository.getExpenses();
-    final electricityExpense = expenses.firstWhere(
-      (expense) => expense.title == 'Elektrik',
-    );
-    expect(electricityExpense.totalAmount, 800);
-    expect(electricityExpense.shareFor(me.id), 400);
+    expect(expenses.where((expense) => expense.title == 'Elektrik'), isEmpty);
 
     await tester.tap(find.byIcon(Icons.dashboard_outlined));
     await tester.pumpAndSettle();
@@ -966,11 +1026,7 @@ void main() {
     await tester.pumpAndSettle();
 
     expenses = await expenseRepository.getExpenses();
-    final netflixExpense = expenses.firstWhere(
-      (expense) => expense.title == 'Netflix',
-    );
-    expect(netflixExpense.totalAmount, 150);
-    expect(netflixExpense.shareFor(me.id), 150);
+    expect(expenses.where((expense) => expense.title == 'Netflix'), isEmpty);
 
     await tester.tap(find.byIcon(Icons.dashboard_outlined));
     await tester.pumpAndSettle();
@@ -986,12 +1042,7 @@ void main() {
 
     expenses = await expenseRepository.getExpenses();
     expect(expenses.where((expense) => expense.title == 'Elektrik'), isEmpty);
-    expect(
-      expenses
-          .firstWhere((expense) => expense.title == 'Netflix')
-          .shareFor(me.id),
-      150,
-    );
+    expect(expenses.where((expense) => expense.title == 'Netflix'), isEmpty);
 
     await tester.tap(find.byIcon(Icons.dashboard_outlined));
     await tester.pumpAndSettle();

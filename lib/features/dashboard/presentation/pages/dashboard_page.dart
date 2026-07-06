@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../../../../shared/widgets/section_placeholder.dart';
 import '../../../bills/domain/models/bill_status.dart';
+import '../../../bills/domain/models/bill_type.dart';
 import '../../../bills/domain/models/monthly_bill.dart';
 import '../../../bills/domain/repositories/bill_repository.dart';
 import '../../../expenses/domain/models/expense.dart';
@@ -87,12 +88,19 @@ class DashboardPage extends StatelessWidget {
     final results = await Future.wait([
       personRepository.getMe(),
       expenseRepository.getExpenses(),
+      billRepository.getAllBillTypes(),
+      billRepository.getBillTypes(),
       billRepository.getMonthlyBills(),
     ]);
 
     final me = results[0] as Person?;
     final expenses = results[1] as List<Expense>;
-    final monthlyBills = results[2] as List<MonthlyBill>;
+    final allBillTypes = results[2] as List<BillType>;
+    final billTypes = results[3] as List<BillType>;
+    final monthlyBills = _filterVisibleMonthlyBills(
+      billTypes: billTypes,
+      monthlyBills: results[4] as List<MonthlyBill>,
+    );
     if (me == null) {
       return _DashboardData.empty();
     }
@@ -102,6 +110,7 @@ class DashboardPage extends StatelessWidget {
       me: me,
       year: now.year,
       month: now.month,
+      billTypes: allBillTypes,
       expenses: expenses,
       monthlyBills: monthlyBills,
     );
@@ -117,6 +126,7 @@ class DashboardPage extends StatelessWidget {
         me: me,
         year: month.year,
         month: month.month,
+        billTypes: allBillTypes,
         expenses: expenses,
         monthlyBills: monthlyBills,
       );
@@ -127,6 +137,19 @@ class DashboardPage extends StatelessWidget {
       archivedMonths: archivedMonths,
       archivedSummaries: archivedSummaries,
     );
+  }
+
+  List<MonthlyBill> _filterVisibleMonthlyBills({
+    required List<BillType> billTypes,
+    required List<MonthlyBill> monthlyBills,
+  }) {
+    final activeBillTypeIds = billTypes.map((billType) => billType.id).toSet();
+
+    return monthlyBills.where((monthlyBill) {
+      return activeBillTypeIds.contains(monthlyBill.billTypeId) ||
+          monthlyBill.isPaid ||
+          monthlyBill.isSkipped;
+    }).toList();
   }
 }
 

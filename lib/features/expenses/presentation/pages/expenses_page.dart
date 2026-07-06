@@ -32,7 +32,12 @@ class _ExpensesPageState extends State<ExpensesPage> {
 
   void _reload() {
     _personsFuture = widget.personRepository.getPersons();
-    _expensesFuture = widget.expenseRepository.getExpenses();
+    _expensesFuture = _loadVisibleExpenses();
+  }
+
+  Future<List<Expense>> _loadVisibleExpenses() async {
+    final expenses = await widget.expenseRepository.getExpenses();
+    return expenses.where((expense) => expense.category != 'Fatura').toList();
   }
 
   Future<void> _refresh() async {
@@ -74,8 +79,7 @@ class _ExpensesPageState extends State<ExpensesPage> {
           children: [
             _PageHeader(
               title: 'Masraflar',
-              subtitle:
-                  'Harcama ekle, paylaşım tipini seç ve kendi payını takip et.',
+              subtitle: 'Harcama ekle, paylasim tipini sec ve kendi payini takip et.',
               onAddPressed: !personsLoaded || persons.isEmpty
                   ? null
                   : () => _addExpense(persons),
@@ -148,6 +152,7 @@ class _AddExpenseDialogState extends State<_AddExpenseDialog> {
 
   late String _paidByPersonId;
   String _splitType = SplitType.onlyMe;
+  DateTime _selectedDate = DateTime.now();
 
   @override
   void initState() {
@@ -187,12 +192,30 @@ class _AddExpenseDialogState extends State<_AddExpenseDialog> {
         title: title,
         category: category,
         totalAmount: amount,
-        spentAt: DateTime.now(),
+        spentAt: _selectedDate,
         paidByPersonId: _paidByPersonId,
         splitType: _splitType,
         participantIds: participantIds,
       ),
     );
+  }
+
+  Future<void> _pickDate() async {
+    final now = DateTime.now();
+    final pickedDate = await showDatePicker(
+      context: context,
+      initialDate: _selectedDate,
+      firstDate: DateTime(now.year - 5, 1, 1),
+      lastDate: DateTime(now.year + 1, 12, 31),
+    );
+
+    if (pickedDate == null) {
+      return;
+    }
+
+    setState(() {
+      _selectedDate = pickedDate;
+    });
   }
 
   @override
@@ -211,12 +234,12 @@ class _AddExpenseDialogState extends State<_AddExpenseDialog> {
                 textInputAction: TextInputAction.next,
                 validator: (value) {
                   if (value == null || value.trim().isEmpty) {
-                    return 'Başlık gerekli';
+                    return 'Baslik gerekli';
                   }
 
                   return null;
                 },
-                decoration: const InputDecoration(labelText: 'Başlık'),
+                decoration: const InputDecoration(labelText: 'Baslik'),
               ),
               const SizedBox(height: 12),
               TextFormField(
@@ -245,16 +268,31 @@ class _AddExpenseDialogState extends State<_AddExpenseDialog> {
                   final amount = double.tryParse(amountText);
 
                   if (amount == null || amount <= 0) {
-                    return 'Geçerli bir tutar gir';
+                    return 'Gecerli bir tutar gir';
                   }
 
                   return null;
                 },
               ),
               const SizedBox(height: 16),
+              InkWell(
+                onTap: _pickDate,
+                borderRadius: BorderRadius.circular(8),
+                child: InputDecorator(
+                  decoration: const InputDecoration(
+                    labelText: 'Tarih',
+                    suffixIcon: Icon(Icons.calendar_today_outlined),
+                  ),
+                  child: Align(
+                    alignment: Alignment.centerLeft,
+                    child: Text(_formatDate(_selectedDate)),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 16),
               DropdownButtonFormField<String>(
                 initialValue: _paidByPersonId,
-                decoration: const InputDecoration(labelText: 'Kim ödedi?'),
+                decoration: const InputDecoration(labelText: 'Kim odedi?'),
                 items: widget.persons
                     .map(
                       (person) => DropdownMenuItem(
@@ -282,7 +320,7 @@ class _AddExpenseDialogState extends State<_AddExpenseDialog> {
                   ),
                   ButtonSegment(
                     value: SplitType.equal,
-                    label: Text('Ortak eşit'),
+                    label: Text('Ortak esit'),
                   ),
                 ],
                 selected: {_splitType},
@@ -299,7 +337,7 @@ class _AddExpenseDialogState extends State<_AddExpenseDialog> {
       actions: [
         TextButton(
           onPressed: () => Navigator.of(context).pop(),
-          child: const Text('Vazgeç'),
+          child: const Text('Vazgec'),
         ),
         FilledButton(onPressed: _submit, child: const Text('Kaydet')),
       ],
@@ -326,7 +364,7 @@ class _ExpenseCard extends StatelessWidget {
     final myShare = myPersonId == null ? 0.0 : expense.shareFor(myPersonId!);
     final paidBy = _personName(expense.paidByPersonId);
     final splitLabel = expense.splitType == SplitType.equal
-        ? 'Ortak eşit bölündü'
+        ? 'Ortak esit bolundu'
         : 'Sadece bana ait';
 
     return Card(
@@ -349,7 +387,7 @@ class _ExpenseCard extends StatelessWidget {
                       ),
                       const SizedBox(height: 4),
                       Text(
-                        '${expense.category} • Ödeyen: $paidBy',
+                        '${expense.category} • Odeyen: $paidBy',
                         style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                           color: colorScheme.onSurfaceVariant,
                         ),
@@ -375,7 +413,7 @@ class _ExpenseCard extends StatelessWidget {
                       ),
                     ),
                     IconButton(
-                      tooltip: 'Masrafı sil',
+                      tooltip: 'Masrafi sil',
                       onPressed: onDelete,
                       icon: const Icon(Icons.delete_outline),
                     ),
@@ -388,7 +426,7 @@ class _ExpenseCard extends StatelessWidget {
               spacing: 8,
               runSpacing: 8,
               children: [
-                _InfoChip(label: 'Benim payım: ${_formatAmount(myShare)}'),
+                _InfoChip(label: 'Benim payim: ${_formatAmount(myShare)}'),
                 _InfoChip(label: splitLabel),
               ],
             ),
@@ -451,14 +489,14 @@ class _EmptyExpensesCard extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    'Henüz masraf yok',
+                    'Henuz masraf yok',
                     style: Theme.of(context).textTheme.titleMedium?.copyWith(
                       fontWeight: FontWeight.w800,
                     ),
                   ),
                   const SizedBox(height: 4),
                   Text(
-                    'İlk masrafı ekleyerek toplam tutarı ve kendi payını görmeye başlayabilirsin.',
+                    'Ilk masrafi ekleyerek toplam tutari ve kendi payini gormeye baslayabilirsin.',
                     style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                       color: colorScheme.onSurfaceVariant,
                     ),

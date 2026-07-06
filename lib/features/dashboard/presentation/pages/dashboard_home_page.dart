@@ -88,16 +88,18 @@ class DashboardHomePage extends StatelessWidget {
     final results = await Future.wait([
       personRepository.getMe(),
       expenseRepository.getExpenses(),
+      billRepository.getAllBillTypes(),
       billRepository.getBillTypes(),
       billRepository.getMonthlyBills(),
     ]);
 
     final me = results[0] as Person?;
     final expenses = results[1] as List<Expense>;
-    final billTypes = results[2] as List<BillType>;
+    final allBillTypes = results[2] as List<BillType>;
+    final billTypes = results[3] as List<BillType>;
     final monthlyBills = _filterVisibleMonthlyBills(
       billTypes: billTypes,
-      monthlyBills: results[3] as List<MonthlyBill>,
+      monthlyBills: results[4] as List<MonthlyBill>,
     );
 
     if (me == null) {
@@ -109,6 +111,7 @@ class DashboardHomePage extends StatelessWidget {
       me: me,
       year: now.year,
       month: now.month,
+      billTypes: allBillTypes,
       expenses: expenses,
       monthlyBills: monthlyBills,
     );
@@ -125,6 +128,7 @@ class DashboardHomePage extends StatelessWidget {
         me: me,
         year: month.year,
         month: month.month,
+        billTypes: allBillTypes,
         expenses: expenses,
         monthlyBills: monthlyBills,
       );
