@@ -1,16 +1,16 @@
 # 🏠 Ev Masrafları App
 
-A Flutter application for managing household expenses, bills, shopping lists, and shared living tasks.
+A Flutter application for tracking household expenses, recurring bills, shopping lists, and shared living costs.
 
 ## ✨ Features
 
-- 📊 Monthly expense dashboard
-- 💸 Personal and shared expense tracking
-- 🧾 Recurring bill management
-- 🛒 Shopping list management
-- ✅ Household task tracking
-- 📦 Local-first data storage
-- 💾 Backup & restore support
+- Monthly expense dashboard
+- Personal & shared expense tracking
+- Recurring bill management
+- Shopping list
+- Household tasks
+- Local-first storage
+- Backup & Restore
 
 ## 🛠️ Tech Stack
 
@@ -18,10 +18,26 @@ A Flutter application for managing household expenses, bills, shopping lists, an
 - Dart
 - Hive
 - Repository Pattern
-- Material Design
 
-## 🚀 Getting Started
+## 🚀 Run
 
 ```bash
 flutter pub get
 flutter run
+```
+
+## 📱 Build APK
+
+```bash
+flutter build apk --release
+```
+
+Output:
+
+```text
+build/app/outputs/flutter-apk/app-release.apk
+```
+
+---
+
+Built with Flutter ❤️
