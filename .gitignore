@@ -43,3 +43,30 @@ app.*.map.json
 /android/app/debug
 /android/app/profile
 /android/app/release
+
+# Local environment and secrets
+.env
+.env.*
+!.env.example
+*.jks
+*.keystore
+key.properties
+android/key.properties
+android/app/key.properties
+android/app/google-services.json
+ios/Runner/GoogleService-Info.plist
+macos/Runner/GoogleService-Info.plist
+lib/firebase_options.dart
+
+# Local app data, exports and backups
+*.hive
+*.hivec
+*.hive.lock
+evapp_backup_*.json
+ev_masraflari_backup_*.json
+backup_*.json
+backups/
+
+# Release assets that are copied manually can live here.
+!releases/
+!releases/*.apk

@@ -1,61 +1,52 @@
 # Ev Masraflari App
 
-Flutter ile gelistirilen local-first ev masrafi ve fatura takip uygulamasi.
+Local-first Flutter uygulamasi. Ev masraflarini, faturalarini, alisveris listesini ve ev gorevlerini tek yerde takip etmek icin gelistirildi.
 
-## Guncel Durum
+![Ev Masraflari App ekran goruntusu](flutter_01.png)
 
-Calisan temel akislari:
+## Ozellikler
 
-- Kisi sistemi: `Ben` kaydi ve ev arkadasi ekleme.
-- Masraf sistemi:
-  - Sadece bana ait masraf.
-  - Ortak esit masraf.
-  - Masraf silme.
-- Dashboard ozeti:
-  - Bana yazilan toplam.
-  - Ortak masraflar.
-  - Benim ortak payim.
-  - Sadece benim masraflarim.
-  - Bu ay girilen toplam.
-- Fatura sistemi:
-  - Fatura turu ekleme.
-  - Ev faturasi / kisisel fatura ayrimi.
-  - Aylik tekrarlayan fatura kaydi.
-  - Sabit tutarli fatura.
-  - Tutar bekleniyor / odenmeye hazir / odendi durumlari.
-  - Fatura odendiginde otomatik masraf kaydi olusturma.
-  - Aylik fatura silindiginde bagli masrafi da silme.
-  - Fatura turu silindiginde eski odenmis aylik kayitlari koruma.
-- Backup sistemi:
-  - JSON yedek disa aktarma.
-  - JSON yedek ice aktarma.
-  - Import oncesi kullanici uyarisi.
-  - `Replace All` import davranisi.
-- Shopping list:
-  - Urun ekleme.
-  - Urun listeleme.
-  - Satin alindi isaretleme.
-  - Urun silme.
-  - Durum filtresi.
-  - Kisa liste ozeti.
+- Dashboard uzerinden aylik ev gideri ozeti
+- Kisi ve ev arkadasi kaydi
+- Sadece bana ait veya ortak esit bolunen masraf girisi
+- Fatura turu ve aylik fatura takibi
+- Odenen faturadan otomatik masraf kaydi olusturma
+- Biten aylar icin arsiv ve detayli ay raporu
+- Alisveris listesi: ekleme, filtreleme, satin alindi isaretleme, silme
+- Ev gorevleri: normal gorev ve rutin gorev akislari
+- JSON yedek alma ve geri yukleme
+- Internet gerektirmeyen local-first veri saklama
 
-## Hesaplama Karari
+## Teknoloji
 
-Uygulama settlement hesabi yapmaz.
+- Flutter / Dart
+- Material UI
+- Hive + hive_flutter
+- Repository pattern
+- Widget ve unit testleri
 
-Ana metrik `Bana yazilan toplam`dir:
+## Kurulum
 
-```text
-Bana yazilan toplam =
-  Ortak masraflardaki benim payim
-  + sadece bana ait masraflar
+```bash
+flutter pub get
+flutter run
 ```
 
-`Ortak esit` secilirse kullanicinin payi toplam tutarin yarisidir. Bu karar masraflar ve faturalardan otomatik olusan masraf kayitlari icin ayni sekilde uygulanir.
+Android APK uretmek icin:
 
-## Dogrulama
+```bash
+flutter build apk --release
+```
 
-Son dogrulama:
+Olusan APK genelde su dizindedir:
+
+```text
+build/app/outputs/flutter-apk/app-release.apk
+```
+
+GitHub icin APK'yi repo icine build klasorunden commit etmek yerine Releases bolumune asset olarak eklemek daha temizdir. Repo icinde tutulacaksa `releases/` klasoru kullanilabilir.
+
+## Test ve Kontrol
 
 ```bash
 dart format lib test
@@ -63,39 +54,26 @@ flutter analyze
 flutter test
 ```
 
-Son test durumunda 29 test basarili gecmistir.
+Mevcut test paketi masraf, fatura, dashboard, backup/restore, alisveris listesi ve gorev akislarini kapsar.
 
-## Commit Kurali
+## Veri ve Gizlilik
 
-AI proje icinde `git commit` calistirmaz. Commit atma isi proje sahibine aittir.
+Uygulama ilk surumde backend kullanmaz. Veriler cihazda Hive ile local olarak tutulur. JSON yedek dosyalari kullanici tarafindan disari aktarilir ve tekrar ice aktarilabilir.
 
-Kullanici commit isterse AI sadece commit mesaji ve komut onerisi verir.
+Public repo icin keystore, environment dosyalari, Firebase/Google servis dosyalari ve local yedek ciktilari `.gitignore` ile disarida birakilmistir.
 
 ## Dokumanlar
 
-Detayli proje dokumanlari:
+Detayli teknik notlar `docs/` klasorundedir:
 
-- `docs/PROJECT_PLAN.md`
-- `docs/README_DOCS.md`
-- `docs/01_PROJECT_OVERVIEW.md`
-- `docs/02_LOCAL_FIRST_ARCHITECTURE.md`
-- `docs/03_DATA_MODELS_AND_STORAGE.md`
-- `docs/04_FEATURE_SPECIFICATIONS.md`
-- `docs/05_BACKUP_RESTORE_AND_MIGRATION.md`
-- `docs/06_DEVELOPMENT_ROADMAP.md`
-- `docs/07_FUTURE_BACKEND_FIREBASE_PLAN.md`
-- `docs/AI_TRACKING.md`
+- [Proje Ozeti](docs/01_PROJECT_OVERVIEW.md)
+- [Local-first Mimari](docs/02_LOCAL_FIRST_ARCHITECTURE.md)
+- [Veri Modelleri ve Storage](docs/03_DATA_MODELS_AND_STORAGE.md)
+- [Ozellik Detaylari](docs/04_FEATURE_SPECIFICATIONS.md)
+- [Backup / Restore](docs/05_BACKUP_RESTORE_AND_MIGRATION.md)
+- [Roadmap](docs/06_DEVELOPMENT_ROADMAP.md)
+- [Gelecek Backend / Firebase Plani](docs/07_FUTURE_BACKEND_FIREBASE_PLAN.md)
 
-## Siradaki Adim
+## Lisans
 
-Onerilen siradaki teknik adim:
-
-1. Dashboard icin biten ay ozet arsivini eklemek.
-2. Ay kartina tiklayinca acilan birlesik aylik rapor akisini kurmak.
-3. Sonra shopping list icin kategori filtresi ve duzenleme akisina donmek.
-
-Backup icin sonra ele alinacak hardening isleri:
-
-- import oncesi otomatik on-yedek
-- import/export sonrasi detayli ozet
-- daha siki JSON sema dogrulamasi
+Bu repo icin lisans henuz eklenmedi. Public kullanima acmadan once tercih edilen lisans dosyasi eklenmelidir.
